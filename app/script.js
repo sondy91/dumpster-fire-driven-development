@@ -199,8 +199,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     bootScreen.classList.add("hidden");
                     app.classList.remove("hidden");
-                    // Immediately assault them with the cookies popup
-                    cookiesOverlay.classList.remove('hidden');
+                    // Immediately assault them with the invasive bottom banner
+                    const invasiveBanner = document.getElementById('invasive-cookie-banner');
+                    invasiveBanner.classList.remove('hidden');
+                    
+                    const bannerActionBtn = document.getElementById('banner-action-btn');
+                    bannerActionBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        invasiveBanner.classList.add('hidden');
+                        cookiesOverlay.classList.remove('hidden');
+                        
+                        // The slow, inevitable growth of the main modal
+                        setTimeout(() => {
+                            cookiesModal.classList.add('max-size-modal');
+                        }, 500);
+                    });
+                    
                     startAnnoyingFeatures(); // Initialize the core features
                 }, 1000);
             }

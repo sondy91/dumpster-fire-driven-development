@@ -493,19 +493,49 @@ h1 {
 
 /*
  * ==========================================
- * COMPONENT: MODALS & HYDRAS * ==========================================
+ * COMPONENT: MODALS & HYDRAS & BANNERS
+ * ==========================================
  */
+
+/* The Invasive Bottom Banner */
+#invasive-cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 33vh;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    border-top: 5px solid #e74c3c;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    animation: slideUp 0.5s ease-out forwards;
+}
+
+#invasive-cookie-banner h2 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+    animation: shake 1s infinite;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
 
 /* The dark overlay behind modals */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0,0,0,0.6);
-    z-index: 1000;
+    z-index: 1001; /* Must be higher than banner */
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden; /* Crucial for preventing scroll escapes */
+    overflow: hidden;
 }
 
 /* The actual modal container */
@@ -513,10 +543,19 @@ h1 {
     background: white;
     width: 90%;
     max-width: 500px;
+    height: auto;
     text-align: center;
     position: relative;
-    /* Transition for the agonizingly slow close: 12 seconds of pain */
-    transition: transform 12s cubic-bezier(0.1, 0, 0.9, 1), opacity 12s;
+    transition: transform 12s cubic-bezier(0.1, 0, 0.9, 1), opacity 12s, max-width 3s ease, height 3s ease;
+}
+
+/* The state when the modal decides to take over the user's life */
+.max-size-modal {
+    max-width: 95vw !important;
+    height: 90vh !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* The class applied via JS when the user clicks 'Close' on the main modal */

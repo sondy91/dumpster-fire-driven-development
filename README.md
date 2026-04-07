@@ -20,6 +20,20 @@
 ![Complexity: O(n^n)](https://img.shields.io/badge/Complexity-O(n%5En)-purple)
 ![Language: All--of--them](https://img.shields.io/badge/Language-All--of--them-brightgreen)
 ![Deployment: Manual--Labor](https://img.shields.io/badge/Deployment-Manual--Labor-orange)
+![Tech-Stack: Unfathomable](https://img.shields.io/badge/Tech--Stack-Unfathomable-red)
+![PRs: Automatically--Rejected](https://img.shields.io/badge/PRs-Automatically--Rejected-black)
+![Onboarding: 6--Months](https://img.shields.io/badge/Onboarding-6--Months-yellow)
+![Coffee: Required](https://img.shields.io/badge/Coffee-Required-brown)
+![Burnout: Imminent](https://img.shields.io/badge/Burnout-Imminent-red)
+![Meetings: 8--Hours/Day](https://img.shields.io/badge/Meetings-8--Hours/Day-blue)
+![Agile: Waterfall](https://img.shields.io/badge/Agile-Waterfall-grey)
+![Microservices: 4,000](https://img.shields.io/badge/Microservices-4%2C000-orange)
+![Kubernetes: Misconfigured](https://img.shields.io/badge/Kubernetes-Misconfigured-blue)
+![Tokens: Spent](https://img.shields.io/badge/Tokens-Spent-green)
+![CI/CD: Crying](https://img.shields.io/badge/CI/CD-Crying-yellow)
+![Jira: Overwhelmed](https://img.shields.io/badge/Jira-Overwhelmed-blue)
+![Code-Review: None](https://img.shields.io/badge/Code--Review-None-red)
+![Vibe-Check: Failed](https://img.shields.io/badge/Vibe--Check-Failed-red)
 
 Welcome to the future of software engineering. 
 
