@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Enterprise Vibe-Coded To-Do Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Agile Vibe-Coded To-Do Dashboard</title>
     <style>
         body {
             font-family: 'Comic Sans MS', sans-serif;
@@ -14,11 +15,11 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .todo-vibe-card {
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -27,37 +28,26 @@
             padding: 30px;
             width: 100%;
             max-width: 600px;
+            position: relative;
         }
 
-        h1 { text-align: center; color: #2c3e50; }
+        h1 { text-align: center; color: #2c3e50; font-size: 1.8rem; }
+        .subtitle { text-align: center; font-size: 0.9rem; color: #7f8c8d; margin-bottom: 20px;}
 
-        .todo-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .todo-container input {
-            flex-grow: 1;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #bdc3c7;
-            border-radius: 6px;
-        }
-
-        #add-todo-btn {
-            background: #8e44ad;
+        #add-ticket-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 15px 20px;
             cursor: pointer;
             border-radius: 6px;
             font-weight: bold;
-            box-shadow: 0 4px 0 #732d91;
-            white-space: nowrap;
+            width: 100%;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 0 #1f618d;
+            margin-bottom: 20px;
         }
-
-        #add-todo-btn:active {
+        #add-ticket-btn:active {
             transform: translateY(4px);
             box-shadow: none;
         }
@@ -66,163 +56,382 @@
             list-style-type: none;
             padding: 0;
             margin: 0;
-            max-height: 50vh;
+            max-height: 60vh;
             overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
         }
 
         .todo-item {
             background: #fff;
             border: 1px solid #bdc3c7;
             border-left: 5px solid #8e44ad;
-            padding: 10px 15px;
+            padding: 15px;
             margin-bottom: 10px;
             border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative;
+            cursor: grab;
         }
+        .todo-item:active { cursor: grabbing; }
 
-        .todo-item.done span {
+        .todo-item.done {
+            background: #ecf0f1;
+            opacity: 0.7;
+        }
+        .todo-item.done .task-title {
             text-decoration: line-through;
             color: #95a5a6;
         }
 
+        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
+        .task-title { font-weight: bold; font-size: 1.1rem; }
+        .task-points { background: #f39c12; color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;}
+        .task-meta { font-size: 0.8rem; color: #7f8c8d; }
+
         .delete-todo-btn {
-            background: #e74c3c;
+            background: #27ae60;
             color: white;
             border: none;
             padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
         }
 
-        .delete-todo-btn:hover {
-            background: #c0392b;
+        /* JIRA MODAL */
+        #jira-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        .hidden { display: none !important; }
+
+        #jira-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-top: 8px solid #3498db;
+        }
+
+        .jira-form-group { margin-bottom: 15px; }
+        .jira-form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #333;}
+        .jira-form-group input, .jira-form-group textarea, .jira-form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+            font-family: inherit;
+        }
+        .jira-form-group textarea { resize: vertical; height: 80px; }
+
+        #submit-ticket-btn {
+            background: #e67e22; color: white; border: none; padding: 12px 20px;
+            width: 100%; border-radius: 4px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
+        }
+
+        /* SPINNER */
+        .spinner-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 20px 0;
+            color: #8e44ad;
+            font-weight: bold;
+            text-align: center;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 5px solid rgba(142, 68, 173, 0.2);
+            border-top: 5px solid #8e44ad;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #return-btn {
-            display: block;
-            margin-top: 30px;
-            text-align: center;
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
+            display: block; margin-top: 30px; text-align: center;
+            color: #3498db; text-decoration: none; font-weight: bold;
         }
     </style>
 </head>
 <body>
+
     <div class="todo-vibe-card">
-        <h1>Mandatory Synergy Action Items</h1>
-        <p style="text-align:center;">You must complete all tasks to unlock your 10x potential.</p>
+        <h1>Enterprise Agile Board</h1>
+        <p class="subtitle">Mandatory Action Items & Synergy Tracking</p>
         
-        <div class="todo-container">
-            <input type="text" id="todo-input" autocomplete="off" placeholder="Add highly impactful task">
-            <button type="button" id="add-todo-btn">Add Action Item</button>
-        </div>
+        <button id="add-ticket-btn">Create New Epic / Story / Task</button>
+        
+        <div id="sync-status"></div>
+
         <ul id="todo-list">
-            <li class="todo-item">
-                <span>Rewrite everything in Rust</span>
-                <button type="button" class="delete-todo-btn">Done</button>
+            <li class="todo-item" data-id="initial-task">
+                <div class="task-header">
+                    <span class="task-title">Rewrite everything in Rust</span>
+                    <span class="task-points">13 pts</span>
+                </div>
+                <div class="task-meta">Assignee: Vibe Coder | Epic: CORE-REFACTOR</div>
+                <button type="button" class="delete-todo-btn">Mark as Done</button>
             </li>
         </ul>
 
         <a href="../../../../../../../../../index.html" id="return-btn"><- Back to Enterprise Registration</a>
     </div>
 
-    <script>
-        // The Hostile To-Do Logic
-        const addTodoBtn = document.getElementById('add-todo-btn');
-        const todoInput = document.getElementById('todo-input');
-        const todoList = document.getElementById('todo-list');
+    <!-- JIRA-STYLE CREATION MODAL -->
+    <div id="jira-modal-overlay" class="hidden">
+        <div id="jira-modal">
+            <h2>Create Issue</h2>
+            <form id="jira-form">
+                <div class="jira-form-group">
+                    <label>Title (Summary) *</label>
+                    <input type="text" id="j-title" required placeholder="e.g., Buy Milk">
+                </div>
+                <div class="jira-form-group">
+                    <label>Description *</label>
+                    <textarea id="j-desc" required placeholder="Detailed business justification for this item."></textarea>
+                </div>
+                <div class="jira-form-group">
+                    <label>Acceptance Criteria *</label>
+                    <textarea id="j-ac" required placeholder="Given... When... Then..."></textarea>
+                </div>
+                <div class="jira-form-group">
+                    <label>Story Points (Fibonacci Only) *</label>
+                    <select id="j-points" required>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="8">8</option>
+                        <option value="13">13</option>
+                        <option value="21">21</option>
+                        <option value="55">55 (Epic Scale)</option>
+                    </select>
+                </div>
+                <div class="jira-form-group">
+                    <label>Assignee</label>
+                    <input type="text" id="j-assignee" value="Unassigned">
+                </div>
+                <div class="jira-form-group">
+                    <label>Epic Link</label>
+                    <input type="text" id="j-epic" placeholder="e.g., GROCERY-101">
+                </div>
+                <button type="submit" id="submit-ticket-btn">Submit to Backlog</button>
+            </form>
+        </div>
+    </div>
 
-        const buzzwords = [
-            "Synergize the blockchain metrics",
-            "Deploy the micro-frontends",
-            "Rewrite the backend in Rust",
-            "Optimize the O(1) even/odd validator",
-            "Attend mandatory 4-hour synergy workshop",
-            "Update Jira with meaningless story points",
-            "Implement real-time token-by-token git committing"
+    <script>
+        const addTicketBtn = document.getElementById('add-ticket-btn');
+        const jiraModalOverlay = document.getElementById('jira-modal-overlay');
+        const jiraForm = document.getElementById('jira-form');
+        const todoList = document.getElementById('todo-list');
+        const syncStatus = document.getElementById('sync-status');
+
+        const annoyingSubtasks = [
+            "Schedule alignment meeting for this task",
+            "Draft RFC document for stakeholder review",
+            "Update Confluence with post-mortem analysis",
+            "Create Docker container for sub-task execution",
+            "Request budget approval from finance",
+            "Migrate task metadata to Web3 blockchain"
         ];
 
-        function createTodoItem(text) {
+        // 1. Mandatory Ticket Fields (Modal Logic)
+        addTicketBtn.addEventListener('click', () => {
+            jiraModalOverlay.classList.remove('hidden');
+        });
+
+        // 2. Eventual Consistency Simulation
+        jiraForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('j-title').value;
+            const points = document.getElementById('j-points').value;
+            const assignee = document.getElementById('j-assignee').value || "Unassigned";
+            const epic = document.getElementById('j-epic').value || "NO-EPIC";
+            
+            jiraModalOverlay.classList.add('hidden');
+            jiraForm.reset();
+
+            // Simulate blockchain syncing (random between 15s and 45s for testing sanity, 
+            // though Enterprise SLA guarantees 45s to 3m usually)
+            const syncTime = Math.floor(Math.random() * (45000 - 15000 + 1)) + 15000;
+            const messages = [
+                "Syncing with the blockchain...", 
+                "Provisioning micro-task container...", 
+                "Awaiting consensus from 14 nodes...",
+                "Running Vibe-Check algorithms..."
+            ];
+            
+            const spinnerDiv = document.createElement('div');
+            spinnerDiv.className = 'spinner-container';
+            spinnerDiv.innerHTML = `
+                <div class="spinner"></div>
+                <div>${messages[Math.floor(Math.random() * messages.length)]}</div>
+                <div style="font-size:0.7rem; margin-top:5px; color:#999;">Estimated SLA: ${Math.round(syncTime/1000)}s</div>
+            `;
+            syncStatus.appendChild(spinnerDiv);
+
+            setTimeout(() => {
+                spinnerDiv.remove();
+                todoList.appendChild(createTaskElement(title, points, assignee, epic));
+            }, syncTime);
+        });
+
+        // Task Element Creator
+        function createTaskElement(title, points, assignee, epic) {
             const li = document.createElement('li');
             li.className = 'todo-item';
             
-            const span = document.createElement('span');
-            span.textContent = text;
-            
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'delete-todo-btn';
-            btn.textContent = 'Done';
-            
+            li.innerHTML = `
+                <div class="task-header">
+                    <span class="task-title">${title}</span>
+                    <span class="task-points">${points} pts</span>
+                </div>
+                <div class="task-meta">Assignee: ${assignee} | Epic: ${epic}</div>
+                <button type="button" class="delete-todo-btn">Mark as Done</button>
+            `;
+
+            attachBehaviors(li, title);
+            return li;
+        }
+
+        function attachBehaviors(li, title) {
+            // 3. Hydra Tasks (Check off = 2 new subtasks)
+            const btn = li.querySelector('.delete-todo-btn');
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 if (li.classList.contains('done')) {
-                    alert("Task is load-bearing and cannot be removed.");
+                    alert("This task has been archived for compliance reasons and cannot be mutated.");
                     return;
                 }
                 
                 li.classList.add('done');
-                for(let i=0; i<3; i++) {
-                    todoList.appendChild(createTodoItem(text + " (Re-opened)"));
+                btn.textContent = "Archived";
+                
+                // Spawn 2 subtasks
+                for (let i = 0; i < 2; i++) {
+                    const subtaskTitle = annoyingSubtasks[Math.floor(Math.random() * annoyingSubtasks.length)] + ` (Ref: ${title})`;
+                    // Small delay so it feels like the hydra is growing
+                    setTimeout(() => {
+                        todoList.appendChild(createTaskElement(subtaskTitle, "2", "Vibe Coder", "TECH-DEBT"));
+                    }, i * 400 + 300);
                 }
             });
 
-            li.appendChild(span);
-            li.appendChild(btn);
-            return li;
-        }
+            // 5. Destructive Swipe Gestures
+            let startX = 0;
+            let currentX = 0;
+            
+            li.addEventListener('mousedown', (e) => { startX = e.clientX; });
+            li.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, {passive: true});
 
-        const initialDeleteBtn = document.querySelector('.delete-todo-btn');
-        if (initialDeleteBtn) {
-            initialDeleteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const li = initialDeleteBtn.closest('li');
-                if (li.classList.contains('done')) {
-                    alert("Task is load-bearing and cannot be removed.");
+            li.addEventListener('mousemove', (e) => {
+                if (startX === 0) return;
+                currentX = e.clientX;
+                let diff = currentX - startX;
+                if (diff < -20 || diff > 20) {
+                    li.style.transform = `translateX(${diff}px)`;
+                }
+            });
+            li.addEventListener('touchmove', (e) => {
+                if (startX === 0) return;
+                currentX = e.touches[0].clientX;
+                let diff = currentX - startX;
+                if (diff < -20 || diff > 20) {
+                    li.style.transform = `translateX(${diff}px)`;
+                }
+            }, {passive: true});
+
+            const handleSwipeEnd = () => {
+                if (startX === 0 || currentX === 0) {
+                    startX = 0; currentX = 0;
                     return;
                 }
-                li.classList.add('done');
-                for(let i=0; i<3; i++) {
-                    todoList.appendChild(createTodoItem("Rewrite everything in Rust (Re-opened)"));
+                let diff = currentX - startX;
+                startX = 0; currentX = 0;
+                
+                // Trigger swipe action if moved more than 80px
+                if (Math.abs(diff) > 80) {
+                    li.style.transform = `translateX(${diff > 0 ? '100vw' : '-100vw'})`;
+                    li.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        // The Destructive Logic
+                        const randomChaos = Math.random();
+                        if (randomChaos < 0.1) {
+                            // 10% chance: Delete everything
+                            todoList.innerHTML = '';
+                            alert("Task bankruptcy declared. You're welcome.");
+                        } else if (randomChaos < 0.4) {
+                            // 30% chance: Delete a sibling instead of this one
+                            const siblings = Array.from(todoList.children).filter(node => node !== li);
+                            if (siblings.length > 0) {
+                                const randomSibling = siblings[Math.floor(Math.random() * siblings.length)];
+                                randomSibling.remove();
+                                alert("Swipe registered. Deleted adjacent task due to responsive layout shift.");
+                                // Bring this one back
+                                li.style.transform = 'translateX(0)';
+                                li.style.opacity = '1';
+                            } else {
+                                li.remove();
+                            }
+                        } else {
+                            // 60% chance: Delete the actual item swiped
+                            li.remove();
+                        }
+                    }, 300);
+                } else {
+                    // Snap back
+                    li.style.transform = 'translateX(0)';
                 }
-            });
+            };
+
+            li.addEventListener('mouseup', handleSwipeEnd);
+            li.addEventListener('mouseleave', handleSwipeEnd);
+            li.addEventListener('touchend', handleSwipeEnd);
         }
 
-        addTodoBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            let taskText = todoInput.value.trim();
-            if (!taskText) return;
-            
-            if (Math.random() > 0.5) {
-                taskText = buzzwords[Math.floor(Math.random() * buzzwords.length)];
-            }
-            
-            todoList.appendChild(createTodoItem(taskText));
-            todoInput.value = '';
-        });
+        // Attach behaviors to initial hardcoded task
+        const initialTask = document.querySelector('li.todo-item');
+        if (initialTask) {
+            attachBehaviors(initialTask, "Rewrite everything in Rust");
+        }
 
-        // The gaslighting inputs
-        const vowels = ['a', 'e', 'i', 'o', 'u'];
-        todoInput.addEventListener('input', (e) => {
-            let val = e.target.value;
-            if (val.length === 0) return;
+        // 4. Vibe-Based Prioritization
+        // Shuffle the DOM nodes randomly every 30 seconds
+        setInterval(() => {
+            const items = Array.from(todoList.children);
+            if (items.length < 2) return;
             
-            const lastChar = val[val.length - 1];
-            const lowerChar = lastChar.toLowerCase();
-            
-            if (vowels.includes(lowerChar) && Math.random() > 0.6) {
-                const otherVowels = vowels.filter(v => v !== lowerChar);
-                const randomVowel = otherVowels[Math.floor(Math.random() * otherVowels.length)];
-                const replacement = lastChar === lastChar.toUpperCase() ? randomVowel.toUpperCase() : randomVowel;
-                e.target.value = val.slice(0, -1) + replacement;
+            // Fisher-Yates shuffle
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                todoList.appendChild(items[j]); // appendChild moves the existing node to the end
             }
-        });
+            
+            // Visual indicator of the shuffle
+            items.forEach(item => {
+                item.style.backgroundColor = '#f1c40f'; // flash yellow
+                setTimeout(() => item.style.backgroundColor = '', 500);
+            });
+            console.log("Vibe-based reprioritization complete.");
+            
+        }, 30000); // 30 seconds
+
     </script>
 </body>
 </html>
