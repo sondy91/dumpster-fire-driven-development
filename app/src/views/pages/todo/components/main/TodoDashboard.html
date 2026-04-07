@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enterprise Vibe-Coded To-Do Dashboard</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: #f4f4f9;
+            background-image: radial-gradient(#d1d1e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .todo-vibe-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 { text-align: center; color: #2c3e50; }
+
+        .todo-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .todo-container input {
+            flex-grow: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+        }
+
+        #add-todo-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #732d91;
+            white-space: nowrap;
+        }
+
+        #add-todo-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        #todo-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            background: #fff;
+            border: 1px solid #bdc3c7;
+            border-left: 5px solid #8e44ad;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .todo-item.done span {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+
+        .delete-todo-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .delete-todo-btn:hover {
+            background: #c0392b;
+        }
+
+        #return-btn {
+            display: block;
+            margin-top: 30px;
+            text-align: center;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="todo-vibe-card">
+        <h1>Mandatory Synergy Action Items</h1>
+        <p style="text-align:center;">You must complete all tasks to unlock your 10x potential.</p>
+        
+        <div class="todo-container">
+            <input type="text" id="todo-input" autocomplete="off" placeholder="Add highly impactful task">
+            <button type="button" id="add-todo-btn">Add Action Item</button>
+        </div>
+        <ul id="todo-list">
+            <li class="todo-item">
+                <span>Rewrite everything in Rust</span>
+                <button type="button" class="delete-todo-btn">Done</button>
+            </li>
+        </ul>
+
+        <a href="../../../../../../../../../index.html" id="return-btn"><- Back to Enterprise Registration</a>
+    </div>
+
+    <script>
+        // The Hostile To-Do Logic
+        const addTodoBtn = document.getElementById('add-todo-btn');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+
+        const buzzwords = [
+            "Synergize the blockchain metrics",
+            "Deploy the micro-frontends",
+            "Rewrite the backend in Rust",
+            "Optimize the O(1) even/odd validator",
+            "Attend mandatory 4-hour synergy workshop",
+            "Update Jira with meaningless story points",
+            "Implement real-time token-by-token git committing"
+        ];
+
+        function createTodoItem(text) {
+            const li = document.createElement('li');
+            li.className = 'todo-item';
+            
+            const span = document.createElement('span');
+            span.textContent = text;
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'delete-todo-btn';
+            btn.textContent = 'Done';
+            
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (li.classList.contains('done')) {
+                    alert("Task is load-bearing and cannot be removed.");
+                    return;
+                }
+                
+                li.classList.add('done');
+                for(let i=0; i<3; i++) {
+                    todoList.appendChild(createTodoItem(text + " (Re-opened)"));
+                }
+            });
+
+            li.appendChild(span);
+            li.appendChild(btn);
+            return li;
+        }
+
+        const initialDeleteBtn = document.querySelector('.delete-todo-btn');
+        if (initialDeleteBtn) {
+            initialDeleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const li = initialDeleteBtn.closest('li');
+                if (li.classList.contains('done')) {
+                    alert("Task is load-bearing and cannot be removed.");
+                    return;
+                }
+                li.classList.add('done');
+                for(let i=0; i<3; i++) {
+                    todoList.appendChild(createTodoItem("Rewrite everything in Rust (Re-opened)"));
+                }
+            });
+        }
+
+        addTodoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            let taskText = todoInput.value.trim();
+            if (!taskText) return;
+            
+            if (Math.random() > 0.5) {
+                taskText = buzzwords[Math.floor(Math.random() * buzzwords.length)];
+            }
+            
+            todoList.appendChild(createTodoItem(taskText));
+            todoInput.value = '';
+        });
+
+        // The gaslighting inputs
+        const vowels = ['a', 'e', 'i', 'o', 'u'];
+        todoInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (val.length === 0) return;
+            
+            const lastChar = val[val.length - 1];
+            const lowerChar = lastChar.toLowerCase();
+            
+            if (vowels.includes(lowerChar) && Math.random() > 0.6) {
+                const otherVowels = vowels.filter(v => v !== lowerChar);
+                const randomVowel = otherVowels[Math.floor(Math.random() * otherVowels.length)];
+                const replacement = lastChar === lastChar.toUpperCase() ? randomVowel.toUpperCase() : randomVowel;
+                e.target.value = val.slice(0, -1) + replacement;
+            }
+        });
+    </script>
+</body>
+</html>

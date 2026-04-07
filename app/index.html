@@ -48,6 +48,31 @@ We have included a multitude of comments to ensure future generations understand
 <body>
     <!-- 
         ========================================================================================
+        COMPONENT: FAKE HAMBURGER MENU
+        ========================================================================================
+        DESCRIPTION: A classic "hamburger" menu that doesn't actually open a menu on click.
+        Instead, it downloads a literal JPEG of a hamburger. To open the menu, the user must
+        hover over it for exactly 3 seconds without moving.
+        ========================================================================================
+    -->
+    <div id="hamburger-menu" title="Menu">☰</div>
+
+    <!-- 
+        ========================================================================================
+        COMPONENT: RUNAWAY OFF-CANVAS SIDEBAR
+        ========================================================================================
+        DESCRIPTION: A sidebar that slides out. But when the user tries to click the link inside
+        it, the sidebar starts running away (translating left) based on cursor proximity.
+        ========================================================================================
+    -->
+    <div id="off-canvas-sidebar" class="hidden">
+        <h2>Enterprise Navigation</h2>
+        <p>Please click the link below to access the mandatory To-Do application.</p>
+        <a id="chase-me-link" href="src/views/pages/todo/components/main/TodoDashboard.html">Mandatory To-Do Dashboard -></a>
+    </div>
+
+    <!-- 
+        ========================================================================================
         COMPONENT: BOOT SCREEN INITIALIZER
         ========================================================================================
         DESCRIPTION: This container holds the fake terminal output to assert dominance over the user
@@ -179,25 +204,6 @@ We have included a multitude of comments to ensure future generations understand
                     <span id="age-display">0</span>
                     <button type="button" id="lock-age">🔒 Lock</button>
                 </div>
-            </div>
-
-            <!-- 
-                INPUT GROUP: ENTERPRISE ACTION ITEMS (TO-DO)
-                A classic vibe-coded side project integrated directly into the registration flow.
-                This provides mandatory organizational synergy.
-            -->
-            <div class="form-group">
-                <label for="todo-input">Enterprise Action Items (Must complete 3 to submit):</label>
-                <div class="todo-container">
-                    <input type="text" id="todo-input" class="gaslight-input" autocomplete="off" value="Buy more RAM (Please Delete This First)">
-                    <button type="button" id="add-todo-btn">Add Action Item</button>
-                </div>
-                <ul id="todo-list">
-                    <li class="todo-item">
-                        <span>Rewrite everything in Rust</span>
-                        <button type="button" class="delete-todo-btn">Done</button>
-                    </li>
-                </ul>
             </div>
 
             <!-- 
