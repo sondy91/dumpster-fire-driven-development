@@ -386,11 +386,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Click downloads a hamburger image
         hamburger.addEventListener('click', () => {
-            // A tiny inline 1x1 pixel JPEG representing a hamburger (not really, just garbage data to force a download)
-            const fakeImage = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=";
+            // A slightly more realistic (but still small) base64 for a hamburger icon
+            const fakeImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQBQYWludC5ORVQgdjMuNS4xMa76BAAAAalJREFUWEftV0uSgzAM7D0L7pA9CyfIAnuW7Fk4A9fInmXByS06kzYp6ReGrSbxS0Vip9XvSXIUf9v/GvCcA076fD7HeZ5fLMsaY4yxXdf98jxP67p+m6b5YprmS9u2X0zTfOn7/oeu6770ff/DMMwXIsfvxXG8YIwxhmVZoqqqS9u2X0zTfOkfDMP8YRi+mab50vf9D8MwXwiC4GKMQSHEpWmaL6ZpvmBZlnitruuLPM/v2ba9YIwxhmEYInAc58IwjDHGGOMfDMP8YRi+mab50vf9D8MwXwiC4OK6rrssy7owDGOEMcbYMAwROI5zYRi+mab50vf9D8MwXwiC4OK6rrssy7owDGNc13WXZVkXhmGMMMYY/2AY5g/D8M00zZe+738YhvlCEAQX13XdZVnWxd/2v/MBvOcAEMdxlmVZIsYYS9O0ZFnWGGN7v/MAvOcAEMYYS9O0ZFnWGGN7v/MAvOcAEMYYS9O0ZFnWGGN7v/MAvOcAEMYYS9O0ZFnWGGN7v/MAvOcAEMYYY2malizLGmNs73cegPccAMLLsixLkiQpY4yxZVmSJElyPp/j/wD8AZidmUrIn9YRAAAAAElFTkSuQmCC";
             const a = document.createElement('a');
             a.href = fakeImage;
-            a.download = 'hamburger.jpg';
+            a.download = 'hamburger.png';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
