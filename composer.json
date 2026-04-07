@@ -1,0 +1,6 @@
+{
+  "name": "enterprise/dumpster-fire",
+  "require": {
+    "php": ">=5.3.0"
+  }
+}

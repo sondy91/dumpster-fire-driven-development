@@ -1,0 +1,9 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2020.01
+    steps:
+      - checkout
+      - run: echo "Failing gracefully"
+      - run: exit 1

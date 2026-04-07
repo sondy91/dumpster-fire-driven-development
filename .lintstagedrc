@@ -1,0 +1,7 @@
+{
+  "*": [
+    "sleep 10",
+    "echo \"Formatting...\"",
+    "exit 1"
+  ]
+}

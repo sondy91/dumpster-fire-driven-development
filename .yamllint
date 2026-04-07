@@ -1,0 +1,4 @@
+extends: relaxed
+rules:
+  indentation:
+    spaces: 3

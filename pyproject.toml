@@ -1,0 +1,5 @@
+[tool.poetry]
+name = "dumpster-fire"
+version = "0.1.0"
+description = "Vibe coded python backend"
+authors = ["10x Developer"]

@@ -1,0 +1,8 @@
+image: node:10
+stages:
+  - build
+build:
+  stage: build
+  script:
+    - echo "Vibe check failed"
+    - exit 1
