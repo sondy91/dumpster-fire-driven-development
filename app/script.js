@@ -362,7 +362,90 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         /**
-         * 3. The Evasive Submit Button
+         * 3. The Enterprise To-Do List
+         * Every time a user adds a task, there is a 50% chance it is overwritten
+         * with a buzzword. Clicking 'Done' on a task duplicates it 3 times instead of deleting.
+         */
+        const addTodoBtn = document.getElementById('add-todo-btn');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+
+        const buzzwords = [
+            "Synergize the blockchain metrics",
+            "Deploy the micro-frontends",
+            "Rewrite the backend in Rust",
+            "Optimize the O(1) even/odd validator",
+            "Attend mandatory 4-hour synergy workshop",
+            "Update Jira with meaningless story points"
+        ];
+
+        function createTodoItem(text) {
+            const li = document.createElement('li');
+            li.className = 'todo-item';
+            
+            const span = document.createElement('span');
+            span.textContent = text;
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'delete-todo-btn';
+            btn.textContent = 'Done';
+            
+            // The Hostile Delete Logic
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (li.classList.contains('done')) {
+                    alert("Task is load-bearing and cannot be removed.");
+                    return;
+                }
+                
+                // Cross it out
+                li.classList.add('done');
+                
+                // Duplicate it 3 times
+                for(let i=0; i<3; i++) {
+                    todoList.appendChild(createTodoItem(text + " (Re-opened)"));
+                }
+            });
+
+            li.appendChild(span);
+            li.appendChild(btn);
+            return li;
+        }
+
+        // Attach hostile delete logic to the initial item
+        const initialDeleteBtn = document.querySelector('.delete-todo-btn');
+        if (initialDeleteBtn) {
+            initialDeleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const li = initialDeleteBtn.closest('li');
+                if (li.classList.contains('done')) {
+                    alert("Task is load-bearing and cannot be removed.");
+                    return;
+                }
+                li.classList.add('done');
+                for(let i=0; i<3; i++) {
+                    todoList.appendChild(createTodoItem("Rewrite everything in Rust (Re-opened)"));
+                }
+            });
+        }
+
+        addTodoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            let taskText = todoInput.value.trim();
+            if (!taskText) return;
+            
+            // 50% chance to completely ignore what they wrote and add a buzzword task
+            if (Math.random() > 0.5) {
+                taskText = buzzwords[Math.floor(Math.random() * buzzwords.length)];
+            }
+            
+            todoList.appendChild(createTodoItem(taskText));
+            todoInput.value = '';
+        });
+
+        /**
+         * 4. The Evasive Submit Button
          * Detaches the submit button from the DOM flow and teleports it around
          * the entire browser window using absolute coordinates.
          */

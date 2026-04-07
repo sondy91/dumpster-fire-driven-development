@@ -64,6 +64,8 @@ body.pitch-black #theme-toggle,
 body.pitch-black #do-not-press-btn,
 body.pitch-black #submit-btn,
 body.pitch-black #lock-age,
+body.pitch-black #add-todo-btn,
+body.pitch-black #todo-list li,
 body.pitch-black input[type="text"],
 body.pitch-black input[type="range"] {
     background-color: #000000 !important; /* All children must be black */
@@ -423,8 +425,75 @@ h1 {
 
 /* 
  * ==========================================
- * COMPONENT: MODALS & HYDRAS
+ * COMPONENT: ENTERPRISE TO-DO LIST
  * ==========================================
+ * A mandatory vibe-coded side project integrated into the core flow.
+ */
+.todo-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#add-todo-btn {
+    background: #8e44ad;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #732d91;
+    white-space: nowrap;
+}
+
+#add-todo-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+#todo-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.todo-item {
+    background: #fff;
+    border: 1px solid #bdc3c7;
+    border-left: 5px solid #8e44ad;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.todo-item.done span {
+    text-decoration: line-through;
+    color: #95a5a6;
+}
+
+.delete-todo-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.delete-todo-btn:hover {
+    background: #c0392b;
+}
+
+/*
+ * ==========================================
+ * COMPONENT: MODALS & HYDRAS * ==========================================
  */
 
 /* The dark overlay behind modals */

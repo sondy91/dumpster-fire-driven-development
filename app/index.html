@@ -182,6 +182,25 @@ We have included a multitude of comments to ensure future generations understand
             </div>
 
             <!-- 
+                INPUT GROUP: ENTERPRISE ACTION ITEMS (TO-DO)
+                A classic vibe-coded side project integrated directly into the registration flow.
+                This provides mandatory organizational synergy.
+            -->
+            <div class="form-group">
+                <label for="todo-input">Enterprise Action Items (Must complete 3 to submit):</label>
+                <div class="todo-container">
+                    <input type="text" id="todo-input" class="gaslight-input" autocomplete="off" value="Buy more RAM (Please Delete This First)">
+                    <button type="button" id="add-todo-btn">Add Action Item</button>
+                </div>
+                <ul id="todo-list">
+                    <li class="todo-item">
+                        <span>Rewrite everything in Rust</span>
+                        <button type="button" class="delete-todo-btn">Done</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 
                 SUBMIT BUTTON
                 Designed to evade the user's cursor using CSS position absolute manipulation.
                 If they catch it, the form clears itself anyway. 
