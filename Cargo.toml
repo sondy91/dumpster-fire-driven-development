@@ -1,0 +1,108 @@
+[package]
+
+name = "dumpster-fire-driven-development"
+
+version = "0.1.0"
+
+authors = [
+"Enterprise Synergy Team"
+]
+
+edition = "2021"
+
+description = "A synergistic approach to dumpster fires"
+
+license = "MIT"
+
+readme = "README.md"
+
+repository = "https://github.com/sondy91/dumpster-fire-driven-development"
+
+keywords = [
+"vibe",
+"coding",
+"chaos",
+"enterprise",
+"bloat"
+]
+
+categories = [
+"garbage-collection",
+"simulations"
+]
+
+[dependencies]
+
+serde = { 
+version = "1.0", 
+features = [
+"derive"
+] 
+}
+
+tokio = { 
+version = "1.0", 
+features = [
+"full"
+] 
+}
+
+reqwest = { 
+version = "0.11", 
+features = [
+"json"
+] 
+}
+
+log = "0.4"
+
+env_logger = "0.9"
+
+rand = "0.8"
+
+uuid = { 
+version = "1.0", 
+features = [
+"v4"
+] 
+}
+
+chrono = "0.4"
+
+anyhow = "1.0"
+
+thiserror = "1.0"
+
+[dev-dependencies]
+
+cargo-expand = "1.0"
+
+pretty_assertions = "1.0"
+
+[build-dependencies]
+
+cc = "1.0"
+
+pkg-config = "0.3"
+
+[profile.release]
+
+opt-level = 3
+
+debug = false
+
+split-debuginfo = '...'
+
+debug-assertions = false
+
+overflow-checks = false
+
+lto = false
+
+panic = 'unwind'
+
+incremental = false
+
+codegen-units = 16
+
+rpath = false

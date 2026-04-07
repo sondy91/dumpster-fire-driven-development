@@ -15,7 +15,7 @@ const TERRIBLE_COMMIT_MESSAGES = [
     "wip",
     "asdfghjkl",
     "I hate this codebase",
-    "Merge branch 'master' of https://github.com/my-acc/dumpster into master",
+    "Merge branch 'master' of https://github.com/sondy91/dumpster into master",
     "Removed a console.log",
     "final version",
     "final version for real",

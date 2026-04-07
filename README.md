@@ -1,5 +1,26 @@
 # Dumpster Fire Driven Development (DFDD) 🔥
 
+![Build: Eventually](https://img.shields.io/badge/Build-Eventually-red)
+![Vibes: Immaculate](https://img.shields.io/badge/Vibes-Immaculate-brightgreen)
+![Coverage: 115%](https://img.shields.io/badge/Coverage-115%25-blueviolet)
+![Dependencies: 42,000](https://img.shields.io/badge/Dependencies-42%2C000-yellow)
+![Enterprise: Ready](https://img.shields.io/badge/Enterprise-Ready-blue)
+![Architecture: Spaghetti](https://img.shields.io/badge/Architecture-Spaghetti-orange)
+![Maintainability: Zero](https://img.shields.io/badge/Maintainability-Zero-red)
+![Standard: Vibe--Coded](https://img.shields.io/badge/Standard-Vibe--Coded-ff69b4)
+![Security: Imaginary](https://img.shields.io/badge/Security-Imaginary-lightgrey)
+![Documentation: JSDoc--Only](https://img.shields.io/badge/Documentation-JSDoc--Only-green)
+![License: Unchecked](https://img.shields.io/badge/License-Unchecked-yellowgreen)
+![Technical-Debt: Infinite](https://img.shields.io/badge/Technical--Debt-Infinite-red)
+![Synergy: Optimized](https://img.shields.io/badge/Synergy-Optimized-blue)
+![Cloud-Native: Probably](https://img.shields.io/badge/Cloud--Native-Probably-lightblue)
+![Web3: Integratable](https://img.shields.io/badge/Web3-Integratable-blue)
+![Bugs: Artisanal](https://img.shields.io/badge/Bugs-Artisanal-brown)
+![Commit-History: Panic--Attack](https://img.shields.io/badge/Commit--History-Panic--Attack-black)
+![Complexity: O(n^n)](https://img.shields.io/badge/Complexity-O(n%5En)-purple)
+![Language: All--of--them](https://img.shields.io/badge/Language-All--of--them-brightgreen)
+![Deployment: Manual--Labor](https://img.shields.io/badge/Deployment-Manual--Labor-orange)
+
 Welcome to the future of software engineering. 
 
 While other developers are trying to write *less* code and reduce their "technical debt" (a concept we believe is a myth invented by HR to pay you less), we are embracing **Dumpster Fire Driven Development (DFDD)**. 

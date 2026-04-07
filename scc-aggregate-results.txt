@@ -6,18 +6,18 @@ SCC AGGREGATE RESULTS
 ───────────────────────────────────────────────────────────────────────────────
 Language                 Files     Lines   Blanks  Comments     Code Complexity
 ───────────────────────────────────────────────────────────────────────────────
-JavaScript                   3       612       93       134      385         31
-Markdown                     2        69       17         0       52          0
-CSS                          1       490       46       127      317          0
-HTML                         1       230       19       133       78          0
+JavaScript                   4       715      109       147      459         40
+Markdown                     2        90       18         0       72          0
+CSS                          1       521       48       128      345          0
+HTML                         1       236       20       137       79          0
 ───────────────────────────────────────────────────────────────────────────────
-Total                        7      1401      175       394      832         31
+Total                        8      1562      195       412      955         40
 ───────────────────────────────────────────────────────────────────────────────
-Estimated Cost to Develop (organic) $22,270
-Estimated Schedule Effort (organic) 3.24 months
-Estimated People Required (organic) 0.61
+Estimated Cost to Develop (organic) $25,739
+Estimated Schedule Effort (organic) 3.42 months
+Estimated People Required (organic) 0.67
 ───────────────────────────────────────────────────────────────────────────────
-Processed 53902 bytes, 0.054 megabytes (SI)
+Processed 60604 bytes, 0.061 megabytes (SI)
 ───────────────────────────────────────────────────────────────────────────────
 
 --- ENTERPRISE DEPENDENCIES (node_modules) ---
@@ -25,11 +25,11 @@ Processed 53902 bytes, 0.054 megabytes (SI)
 ================================
 FINAL AGGREGATED SCOREBOARD
 ================================
-Total Files:      507
-Total Lines:      35,003,401
-Total Blanks:     2,175
-Total Comments:   6,894
-Total Code:       34,994,332
+Total Files:      508
+Total Lines:      35,003,562
+Total Blanks:     2,195
+Total Comments:   6,912
+Total Code:       34,994,455
 
 * Note: Standard SCC execution ran out of memory (OOM Exit Code 137). 
   This aggregation was achieved via iterative chunking. 

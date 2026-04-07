@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: dumpster-fire-deployment
+
+  labels:
+
+    app: dumpster-fire
+
+    tier: frontend
+
+    synergy: maximum
+
+spec:
+
+  replicas: 100
+
+  selector:
+
+    matchLabels:
+
+      app: dumpster-fire
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: dumpster-fire
+
+    spec:
+
+      containers:
+
+      - name: dumpster-fire-container
+
+        image: nginx:latest
+
+        ports:
+
+        - containerPort: 80
+
+        resources:
+
+          requests:
+
+            memory: "128Mi"
+
+            cpu: "100m"
+
+          limits:
+
+            memory: "16Gi"
+
+            cpu: "8000m"
+
+        env:
+
+        - name: VIBE_MODE
+
+          value: "immaculate"
+
+        - name: NODE_ENV
+
+          value: "production-ish"
+
+---
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: dumpster-fire-service
+
+spec:
+
+  selector:
+
+    app: dumpster-fire
+
+  ports:
+
+    - protocol: TCP
+
+      port: 80
+
+      targetPort: 80
+
+  type: LoadBalancer

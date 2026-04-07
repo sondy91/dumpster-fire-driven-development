@@ -1,0 +1,109 @@
+{
+
+"compilerOptions": {
+
+"target": "es2016",
+
+"module": "commonjs",
+
+"rootDir": "./",
+
+"moduleResolution": "node",
+
+"baseUrl": "./",
+
+"paths": {
+
+"*": [
+
+"node_modules/*"
+
+]
+
+},
+
+"types": [
+
+"node",
+
+"jest"
+
+],
+
+"allowJs": true,
+
+"checkJs": true,
+
+"jsx": "preserve",
+
+"declaration": true,
+
+"declarationMap": true,
+
+"sourceMap": true,
+
+"outFile": "./dist/bundle.js",
+
+"outDir": "./dist",
+
+"removeComments": false,
+
+"noEmit": false,
+
+"importHelpers": true,
+
+"downlevelIteration": true,
+
+"isolatedModules": true,
+
+"strict": true,
+
+"noImplicitAny": true,
+
+"strictNullChecks": true,
+
+"strictFunctionTypes": true,
+
+"strictBindCallApply": true,
+
+"strictPropertyInitialization": true,
+
+"noImplicitThis": true,
+
+"alwaysStrict": true,
+
+"noUnusedLocals": true,
+
+"noUnusedParameters": true,
+
+"noImplicitReturns": true,
+
+"noFallthroughCasesInSwitch": true,
+
+"noUncheckedIndexedAccess": true,
+
+"noImplicitOverride": true,
+
+"noPropertyAccessFromIndexSignature": true,
+
+"moduleSuffixes": [
+
+".ts",
+
+".js"
+
+],
+
+"allowSyntheticDefaultImports": true,
+
+"esModuleInterop": true,
+
+"preserveSymlinks": true,
+
+"forceConsistentCasingInFileNames": true,
+
+"skipLibCheck": true
+
+}
+
+}
