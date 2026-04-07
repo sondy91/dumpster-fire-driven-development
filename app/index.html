@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<!-- 
+===================================================================================================
+ENTERPRISE REGISTRATION PORTAL v9.4.2-RELEASE-CANDIDATE-FINAL-v3
+===================================================================================================
+Author: Enterprise Architecture Committee & Synergy Taskforce
+Date: 2026-04-06
+Classification: STRICTLY CONFIDENTIAL - DO NOT DISTRIBUTE TO NON-ENTERPRISE PERSONNEL
+Description: 
+This HyperText Markup Language (HTML) document serves as the primary initialization vector 
+and Document Object Model (DOM) scaffold for the Enterprise Registration Portal. 
+It utilizes industry-standard tagging mechanisms to render cross-platform compatible 
+visual elements within a compliant Web Browser Application.
+
+WARNING: Modification of these tags without a 6-week review period and approval from 
+at least 4 Vice Presidents of Engineering will result in immediate termination.
+
+===================================================================================================
+HTML METADATA & DOCUMENT HEAD
+===================================================================================================
+The <head> element is a container for metadata (data about data) and is placed between the <html> tag and the <body> tag. 
+Metadata is data about the HTML document. Metadata is not displayed. 
+Metadata typically define the document title, character set, styles, scripts, and other meta information.
+We have included a multitude of comments to ensure future generations understand the gravity of these settings.
+-->
+<html lang="en">
+<head>
+    <!-- The character set must be strictly defined to prevent localized encoding anomalies -->
+    <meta charset="UTF-8">
+    
+    <!-- 
+        Viewport configuration for responsive synergy. 
+        Note: We actually hate mobile users, but marketing made us add this.
+        It is imperative that initial-scale is 1.0, otherwise the layout might be readable.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- The title displayed in the browser tab. Extremely crucial for SEO metrics -->
+    <title>Enterprise Registration Portal v9.4.2</title>
+    
+    <!-- 
+        External stylesheet linkage.
+        We externalized this to save exactly 0.004 milliseconds of inline parsing time.
+        Styles are what make the web beautiful. Our styles make the web hostile.
+    -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 
+        ========================================================================================
+        COMPONENT: BOOT SCREEN INITIALIZER
+        ========================================================================================
+        DESCRIPTION: This container holds the fake terminal output to assert dominance over the user
+        by making them wait for fake dependencies to resolve. 
+        
+        The concept of "waiting" builds character and brand loyalty. If a user is willing to wait 
+        15 seconds to see a form, they are highly qualified leads.
+        ========================================================================================
+    -->
+    <div id="boot-screen">
+        <!-- Terminal output injected via JavaScript Document Object Model manipulation -->
+        <div id="terminal-output"></div>
+        
+        <!-- The Error State container, hidden by default using the .hidden class -->
+        <div id="error-state" class="hidden">
+            <!-- Critical failure header. Red color applied via CSS for maximum psychological impact -->
+            <h1 class="critical-error">FATAL ERROR: OVERFLOW IN left-pad</h1>
+            
+            <!-- Useless explanation text meant to confuse middle management -->
+            <p>The package manager has encountered an unrecoverable failure.</p>
+            
+            <!-- 
+                LEVER COMPONENT
+                Because a simple button click is too easy. The user must perform manual labor.
+                The act of dragging a digital element simulates physical exertion, fulfilling our
+                quarterly quota for "Gamification of User Struggle".
+            -->
+            <div id="lever-container">
+                <p>🎚️ DRAG LEVER DOWN TO RESTART</p>
+                <div id="lever-track">
+                    <!-- The draggable handle object. Do not touch the DOM here without gloves. -->
+                    <div id="lever-handle"></div>
+                </div>
+            </div>
+
+            <!-- 
+                LOADING BAR COMPONENT
+                Designed to exceed 100% capacity to demonstrate our commitment to giving 110%.
+                When we tell our shareholders we give 450%, we literally mean it in our UI.
+            -->
+            <div id="loading-container" class="hidden">
+                <p>Patching memory leaks and downloading RAM...</p>
+                <div id="loading-track">
+                    <div id="loading-bar">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+        ========================================================================================
+        COMPONENT: MAIN APPLICATION CONTAINER (VIBE-CODED)
+        ========================================================================================
+        DESCRIPTION: The actual form the user wants to fill out. Hidden until boot sequence finishes.
+        We use advanced "Glassmorphism" to distract the user from the sheer hostility of the inputs.
+        ========================================================================================
+    -->
+    <div id="app" class="hidden vibe-card">
+        <!-- 
+            THEME TOGGLE BUTTON
+            Changes the background to pitch black, rendering the text invisible. 
+            A masterclass in accessibility. This button also turns invisible when clicked.
+        -->
+        <button id="theme-toggle">🌙 Toggle Dark Mode</button>
+        
+        <!-- Application Headers. Centered to project authority. -->
+        <h1>Enterprise Registration Portal</h1>
+        <p class="subtitle">Please fill out your details to continue.</p>
+        
+        <!-- 
+            FORM ELEMENT
+            Intercepts the default submit action, insults the user, and clears all data.
+            This ensures data integrity by preventing any data from ever being submitted.
+            It is the ultimate zero-trust architecture. We do not trust the user to give us data.
+        -->
+        <form id="terrible-form" onsubmit="event.preventDefault(); alert('Session Expired due to inefficiency. Please retype 20% slower.'); this.reset();">
+            
+            <!-- 
+                INPUT GROUP: FIRST NAME
+                Utilizes the gaslight-input class to randomly swap vowels.
+                We explicitly use 'value' instead of 'placeholder' so the user has to manually 
+                delete our garbage text before typing their own.
+            -->
+            <div class="form-group">
+                <label for="first-name">First Name (Required):</label>
+                <!-- Pre-filled with garbage so they have to delete it first -->
+                <input type="text" id="first-name" class="gaslight-input" autocomplete="off" value="e.g. Doe">
+            </div>
+
+            <!-- 
+                INPUT GROUP: LAST NAME
+                Utilizes the gaslight-input class to randomly swap vowels.
+                We explicitly use 'value' instead of 'placeholder' so the user has to manually 
+                delete our garbage text before typing their own.
+            -->
+            <div class="form-group">
+                <label for="last-name">Last Name (Required):</label>
+                <!-- Pre-filled with garbage so they have to delete it first -->
+                <input type="text" id="last-name" class="gaslight-input" autocomplete="off" value="youremail@example.com">
+            </div>
+
+            <!-- 
+                INPUT GROUP: EMAIL ADDRESS
+                Utilizes the gaslight-input class to randomly swap vowels.
+                We explicitly use 'value' instead of 'placeholder' so the user has to manually 
+                delete our garbage text before typing their own.
+            -->
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <!-- Pre-filled with garbage so they have to delete it first -->
+                <input type="text" id="email" class="gaslight-input" autocomplete="off" value="e.g. John">
+            </div>
+
+            <!-- 
+                INPUT GROUP: AGE VERIFICATION
+                Utilizes a rapidly shifting range slider to test user reflexes and patience.
+                A user who can catch their age within 85 milliseconds is agile enough to use our software.
+            -->
+            <div class="form-group">
+                <label for="age">Verify your exact age:</label>
+                <div class="slider-container">
+                    <input type="range" id="age-slider" min="0" max="100" value="0">
+                    <span id="age-display">0</span>
+                    <button type="button" id="lock-age">🔒 Lock</button>
+                </div>
+            </div>
+
+            <!-- 
+                SUBMIT BUTTON
+                Designed to evade the user's cursor using CSS position absolute manipulation.
+                If they catch it, the form clears itself anyway. 
+            -->
+            <button type="submit" id="submit-btn">Submit Application</button>
+        </form>
+    </div>
+
+    <!-- 
+        ========================================================================================
+        COMPONENT: COOKIES & PRIVACY MODAL
+        ========================================================================================
+        DESCRIPTION: A legally compliant (we think) modal that floats upward at 0.001mph when closed.
+        It is imperative that we collect all data, even if the user explicitly says no.
+        ========================================================================================
+    -->
+    <div id="cookies-overlay" class="modal-overlay hidden">
+        <div class="modal-content vibe-card" id="cookies-modal">
+            <h2>🍪 We value your privacy!</h2>
+            <p>Please accept our 4,000 page terms of service to continue using this enterprise software. We definitely won't sell your data to the highest bidder.</p>
+            
+            <!-- Modal Action Buttons -->
+            <div class="modal-actions">
+                <button id="accept-cookies" class="btn-primary">Accept All</button>
+                <button id="reject-cookies" class="btn-secondary">Manage Preferences ⮟</button>
+            </div>
+            
+            <!-- 
+                FAKE PREFERENCES CONTAINER
+                Revealed when the user attempts to exercise their free will.
+                All options are checked and disabled. Resistance is futile.
+            -->
+            <div id="cookie-preferences" class="hidden">
+                <hr>
+                <p><strong>Preferences:</strong></p>
+                <label><input type="checkbox" checked disabled> Essential Cookies (Cannot be disabled)</label><br>
+                <label><input type="checkbox" checked disabled> Tracking Cookies (Cannot be disabled)</label><br>
+                <label><input type="checkbox" checked disabled> Marketing Cookies (Cannot be disabled)</label><br>
+                <p><em>Just kidding, you have no choices.</em></p>
+                <button id="close-cookies" class="btn-tertiary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+        Script initialization. Placed at the end of the body to ensure the DOM is fully parsed.
+        However, we still use DOMContentLoaded in the script anyway, making this placement redundant.
+        Redundancy is an Enterprise Best Practice™.
+    -->
+    <script src="script.js"></script>
+</body>
+</html>

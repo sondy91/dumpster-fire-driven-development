@@ -1,0 +1,490 @@
+/*
+===================================================================================================
+ENTERPRISE CASCADING STYLE SHEETS (CSS) ARCHITECTURE
+===================================================================================================
+File: style.css
+Version: 9.4.2-RELEASE-CANDIDATE-FINAL-v3
+Author: Enterprise Design & Synergy Operations Committee
+Date: 2026-04-06
+
+Description:
+This file contains the foundational styling directives for the Enterprise Registration Portal.
+All color values have been focus-grouped by a panel of 40 executives over a 6-month period.
+Do not alter margin, padding, or color hex codes without submitting a JIRA ticket, followed by
+a Confluence page update, and a mandatory 2-week cooling-off period.
+
+Note on !important:
+The `!important` flag is used extensively throughout this document. This is considered an
+Enterprise Best Practice™ to ensure that our styles always win in specificity battles against
+the user's browser, user agents, or any reasonable logic.
+===================================================================================================
+*/
+
+/* 
+ * ==========================================
+ * GLOBAL BODY RESET & TYPOGRAPHY
+ * ==========================================
+ * We utilize Comic Sans MS and Chalkboard SE as our primary typefaces to convey a sense of
+ * whimsy and approachable corporate synergy.
+ */
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+    margin: 0; /* Resetting the default browser margin to 0 for maximum control */
+    padding: 0; /* Resetting the default browser padding to 0 for maximum control */
+    overflow-x: hidden; /* Hiding the horizontal scrollbar because scrolling is for amateurs */
+    background-color: #f4f4f9; /* A soothing off-white/light-grey background color */
+    
+    /* Radial gradient background to simulate a cutting-edge grid layout */
+    background-image: radial-gradient(#d1d1e0 1px, transparent 1px);
+    background-size: 20px 20px; /* The grid size. 20px was chosen for synergy. */
+    
+    /* Smooth transitions for when the user accidentally clicks the dark mode toggle */
+    transition: background-color 0.1s, color 0.1s;
+}
+
+/* 
+ * ==========================================
+ * ACCESSIBILITY: PITCH BLACK DARK MODE
+ * ==========================================
+ * Our proprietary dark mode implementation. It literally turns everything black.
+ * This is an intentional design choice to prevent the user from seeing the form,
+ * thereby reducing server load via abandonment.
+ */
+body.pitch-black {
+    background-color: #000000 !important; /* Force the background to pure black */
+    background-image: none !important; /* Remove the grid */
+    color: #000000 !important; /* Force text to pure black so it's unreadable */
+}
+
+/* Deeply nested pitch black overrides.
+ * We must explicitly target buttons, inputs, and IDs because CSS specificity is a nightmare.
+ */
+body.pitch-black *,
+body.pitch-black #theme-toggle,
+body.pitch-black #submit-btn,
+body.pitch-black #lock-age,
+body.pitch-black input[type="text"],
+body.pitch-black input[type="range"] {
+    background-color: #000000 !important; /* All children must be black */
+    color: #000000 !important; /* All children text must be black */
+    border-color: #000000 !important; /* All borders must be black */
+    box-shadow: none !important; /* Shadows provide contrast. Contrast is weakness. */
+    background-image: none !important; /* Destroy any gradients */
+    text-shadow: none !important;
+}
+
+/* Make sure the text inside the inputs is also invisible */
+body.pitch-black input::placeholder {
+    color: #000000 !important;
+}
+
+/* 
+ * THE HIDDEN CLASS
+ * A foundational utility class used to hide elements. Uses !important because we mean it.
+ */
+.hidden {
+    display: none !important;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: BOOT SCREEN INITIALIZER
+ * ==========================================
+ */
+#boot-screen {
+    position: fixed; /* Fixed position covers the entire viewport */
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: #121212; /* Darker than pitch-black, but not quite black */
+    color: #00ff00; /* Hacker green text. Very secure. */
+    font-family: 'Courier New', Courier, monospace; /* Monospace font to simulate a terminal */
+    padding: 20px;
+    box-sizing: border-box; /* Includes padding in the width calculation */
+    z-index: 9999; /* Ensure this is on top of absolutely everything else */
+}
+
+/* The actual text output container inside the boot screen */
+#terminal-output {
+    white-space: pre-wrap; /* Preserves whitespace and line breaks */
+    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.2;
+    height: 70vh; /* Takes up 70% of the viewport height */
+    overflow-y: hidden; /* Scrolling is handled via JavaScript to prevent user intervention */
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: CRITICAL ERROR STATE
+ * ==========================================
+ */
+#error-state {
+    text-align: center;
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    background: rgba(18, 18, 18, 0.95); /* Slight transparency for a cinematic effect */
+    padding: 20px;
+}
+
+/* The actual error text. Uses a custom animation for maximum anxiety generation. */
+.critical-error {
+    color: #ff0033; /* Enterprise Red */
+    font-size: 2.5rem;
+    animation: blink 0.8s infinite; /* Blinks indefinitely until the end of time */
+}
+
+/* Keyframes for the blinking anxiety text */
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: THE RESTART LEVER
+ * ==========================================
+ * This lever replaces the traditional "button" paradigm with physical digital labor.
+ */
+#lever-container {
+    margin-top: 30px;
+}
+
+/* The track that the lever slides down */
+#lever-track {
+    width: 40px;
+    height: 180px;
+    background-color: #333;
+    border: 4px solid #555;
+    border-radius: 20px;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* The handle the user must drag */
+#lever-handle {
+    width: 80px;
+    height: 30px;
+    background-color: #cc0000;
+    position: absolute;
+    left: -24px;
+    top: 0px;
+    border-radius: 5px;
+    cursor: grab; /* Visual indicator that this item can be grasped */
+    box-shadow: 0 4px 0 #800000; /* A nice chunky 3D effect */
+}
+
+/* State change when the lever is actively being dragged */
+#lever-handle:active {
+    cursor: grabbing; /* Visual indicator that the user is holding on for dear life */
+    background-color: #ff3333;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: OVERFLOWING LOADING BAR
+ * ==========================================
+ * A loading bar that intentionally breaks its container's boundaries.
+ */
+#loading-container {
+    margin-top: 40px;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* The container for the loading bar */
+#loading-track {
+    width: 100%;
+    height: 30px;
+    background: #333;
+    border: 2px solid #555;
+    position: relative;
+    /* NOTE: overflow: hidden is INTENTIONALLY omitted so the bar ruins the page layout */
+}
+
+/* The bar itself */
+#loading-bar {
+    height: 100%;
+    width: 0%; /* Starts at 0, injected via JS up to 450% */
+    background: #00ff00;
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #000;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Text aligns to the right side of the growing bar */
+    padding-right: 10px;
+    box-sizing: border-box;
+    transition: width 0.1s linear; /* Smooth but rapid growth */
+    white-space: nowrap; /* Prevents the text from wrapping inside the thin bar */
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: VIBE-CODED GLASSMORPHISM CARD
+ * ==========================================
+ * This class applies the "Glassmorphism" aesthetic that was highly popular in 2021.
+ * We are adopting it now because Enterprise is usually 5 years behind the curve.
+ */
+.vibe-card {
+    background: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
+    backdrop-filter: blur(10px); /* The crucial blurring effect */
+    -webkit-backdrop-filter: blur(10px); /* Safari support because we have to */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* A deep, moody shadow */
+    border-radius: 15px;
+    padding: 30px;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: MAIN APPLICATION FORM
+ * ==========================================
+ */
+#app {
+    max-width: 650px;
+    margin: 40px auto;
+    position: relative;
+}
+
+/* The button that ruins the user's life by turning everything black */
+#theme-toggle {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: linear-gradient(45deg, #121212, #434343);
+    color: white;
+    border: 2px solid #fff;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 20px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* Form Headers */
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 5px;
+    text-transform: uppercase; /* YELLING AT THE USER */
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+/* Individual Form Input Containers */
+.form-group {
+    margin-bottom: 25px;
+    background: rgba(255,255,255,0.8);
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 5px solid #3498db; /* A nice enterprise blue accent */
+    transition: transform 0.2s; /* Smooth hover transition */
+}
+
+/* Shifting the form group slightly to the right on hover to create a sense of unease */
+.form-group:hover {
+    transform: translateX(5px);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+/* Text Input Styling */
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    font-size: 16px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    background-color: #ecf0f1;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: AGE VERIFICATION SLIDER
+ * ==========================================
+ */
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#age-slider {
+    flex-grow: 1;
+    cursor: grab;
+}
+
+/* The bubble that displays the current rapidly-shifting age */
+#age-display {
+    font-weight: bold;
+    font-size: 1.2rem;
+    min-width: 40px;
+    text-align: center;
+    background: #f1c40f; /* Warning yellow */
+    padding: 5px;
+    border-radius: 50%;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* The lock button */
+#lock-age {
+    background: #e67e22; /* Orange */
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 #d35400; /* 3D effect */
+}
+
+/* Push the button down when clicked */
+#lock-age:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+/* Disabled state when the age is temporarily locked */
+#lock-age:disabled {
+    background: #95a5a6; /* Grey out the button */
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: EVASIVE SUBMIT BUTTON
+ * ==========================================
+ * Designed to flee from the user's cursor.
+ */
+#submit-btn {
+    padding: 18px 40px;
+    background: linear-gradient(135deg, #27ae60, #2ecc71); /* Green gradient */
+    color: white;
+    border: none;
+    border-radius: 50px; /* Pill shape */
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 8px 15px rgba(46, 204, 113, 0.4);
+    display: block;
+    margin: 20px auto 0; /* Center align */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: MODALS & HYDRAS
+ * ==========================================
+ */
+
+/* The dark overlay behind modals */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Crucial for preventing scroll escapes */
+}
+
+/* The actual modal container */
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+    /* Transition for the agonizingly slow close: 12 seconds of pain */
+    transition: transform 12s cubic-bezier(0.1, 0, 0.9, 1), opacity 12s;
+}
+
+/* The class applied via JS when the user clicks 'Close' on the main modal */
+.modal-closing {
+    transform: translateY(-200vh) rotate(45deg); /* It floats slowly UPWARDS and rotates */
+    opacity: 0;
+}
+
+/* Button layout inside modals */
+.modal-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+/* Generic button utility classes */
+.btn-primary {
+    background: #3498db; color: white;
+    border: none; padding: 10px 20px; border-radius: 5px;
+    cursor: pointer; font-weight: bold;
+}
+.btn-primary:hover { background: #2980b9; }
+
+.btn-secondary {
+    background: #ecf0f1; color: #333;
+    border: 1px solid #bdc3c7; padding: 10px 20px; border-radius: 5px;
+    cursor: pointer;
+}
+.btn-secondary:hover { background: #bdc3c7; }
+
+.btn-tertiary {
+    background: #e74c3c; color: white;
+    border: none; padding: 8px 15px; border-radius: 5px;
+    cursor: pointer; font-weight: bold;
+    margin-top: 15px;
+}
+
+/* The fake preferences pane */
+#cookie-preferences {
+    text-align: left;
+    margin-top: 15px;
+    background: #fdfdfd;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+#cookie-preferences label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* 
+ * ==========================================
+ * COMPONENT: HYDRA MODAL REPLICANTS
+ * ==========================================
+ * Smaller modals that spawn infinitely when the user tries to close them.
+ */
+.hydra-modal {
+    position: absolute;
+    width: 300px;
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #e74c3c;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border-radius: 10px;
+    z-index: 1001; /* Must sit above everything else */
+    text-align: center;
+}
