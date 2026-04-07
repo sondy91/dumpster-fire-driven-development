@@ -1,0 +1,36 @@
+DUMPSTER FIRE DRIVEN DEVELOPMENT
+================================
+SCC AGGREGATE RESULTS
+
+--- FRONTEND & CONFIG ---
+───────────────────────────────────────────────────────────────────────────────
+Language                 Files     Lines   Blanks  Comments     Code Complexity
+───────────────────────────────────────────────────────────────────────────────
+JavaScript                   3       612       93       134      385         31
+Markdown                     2        69       17         0       52          0
+CSS                          1       490       46       127      317          0
+HTML                         1       230       19       133       78          0
+───────────────────────────────────────────────────────────────────────────────
+Total                        7      1401      175       394      832         31
+───────────────────────────────────────────────────────────────────────────────
+Estimated Cost to Develop (organic) $22,270
+Estimated Schedule Effort (organic) 3.24 months
+Estimated People Required (organic) 0.61
+───────────────────────────────────────────────────────────────────────────────
+Processed 53902 bytes, 0.054 megabytes (SI)
+───────────────────────────────────────────────────────────────────────────────
+
+--- ENTERPRISE DEPENDENCIES (node_modules) ---
+
+================================
+FINAL AGGREGATED SCOREBOARD
+================================
+Total Files:      507
+Total Lines:      35,003,401
+Total Blanks:     2,175
+Total Comments:   6,894
+Total Code:       34,994,332
+
+* Note: Standard SCC execution ran out of memory (OOM Exit Code 137). 
+  This aggregation was achieved via iterative chunking. 
+  You are officially a 35-X Developer.
