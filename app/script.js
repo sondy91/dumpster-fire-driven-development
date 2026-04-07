@@ -38,6 +38,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /**
+     * Do Not Press Button Mechanism
+     * The ultimate test of user obedience. Deliberately triggers a memory leak
+     * to completely freeze the browser tab by stuffing window objects into localStorage
+     * until the V8 engine cries.
+     */
+    const doNotPressBtn = document.getElementById('do-not-press-btn');
+    doNotPressBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert("You were warned. Initializing Enterprise Telemetry Sync...");
+        
+        let garbage = "SYN";
+        // Recursively stringify and expand until OOM
+        setInterval(() => {
+            try {
+                for (let i = 0; i < 1000; i++) {
+                    garbage += garbage + Math.random().toString();
+                }
+                localStorage.setItem('enterprise_telemetry_' + Date.now(), garbage);
+                document.body.innerHTML += `<div style="position:fixed;top:${Math.random()*100}vh;left:${Math.random()*100}vw;color:red;z-index:99999;font-size:30px;">OOM</div>`;
+            } catch (err) {
+                console.error("The tab should be crashing right about now.");
+            }
+        }, 10);
+    });
+
+    /**
      * Fake Package Dependency Array
      * A curated list of 30 dependencies to make our project look complex.
      */
