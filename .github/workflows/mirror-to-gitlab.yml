@@ -1,0 +1,29 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: ["**"]
+  delete:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GITLAB_SSH_KEY }}" > ~/.ssh/gitlab_key
+          chmod 600 ~/.ssh/gitlab_key
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Push to GitLab
+        run: |
+          git remote add gitlab git@gitlab.com:asonderman/${{ github.event.repository.name }}.git
+          git push gitlab --all --force
+          git push gitlab --tags --force
+        env:
+          GIT_SSH_COMMAND: "ssh -i ~/.ssh/gitlab_key -o StrictHostKeyChecking=no"
