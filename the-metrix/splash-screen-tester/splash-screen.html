@@ -1,0 +1,1766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Metrix · Splash Prototyper</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --surface: #12121a;
+        --surface2: #1a1a26;
+        --border: #2a2a3a;
+        --accent: #4fffb0;
+        --accent2: #7c6dfa;
+        --accent3: #ff6b6b;
+        --accent4: #ffd93d;
+        --text: #e8e8f0;
+        --muted: #6b6b8a;
+        --matrix-green: #00ff41;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Mono', monospace;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      /* ===== TOOLBAR ===== */
+      .toolbar {
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        background: rgba(10, 10, 15, 0.95);
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .toolbar-brand {
+        font-family: 'Syne', sans-serif;
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        margin-right: 8px;
+        border-right: 1px solid var(--border);
+        padding-right: 20px;
+        white-space: nowrap;
+      }
+
+      .variant-switcher {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .vbtn {
+        padding: 6px 14px;
+        border-radius: 5px;
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: var(--muted);
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .vbtn.active {
+        background: var(--surface2);
+        color: var(--accent);
+        border: 1px solid var(--border);
+      }
+      .vbtn:hover:not(.active) {
+        color: var(--text);
+      }
+
+      .toolbar-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 7px 16px;
+        border-radius: 6px;
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        letter-spacing: 0.03em;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #000;
+        font-weight: 600;
+      }
+      .btn-primary:hover {
+        background: #3de8a0;
+        transform: translateY(-1px);
+      }
+      .btn-ghost {
+        background: var(--surface2);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      /* ===== STAGE ===== */
+      .stage-wrap {
+        position: relative;
+        overflow: hidden;
+        background: #000;
+        min-height: 480px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #stage {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        inset: 0;
+      }
+
+      /* Scanline overlay */
+      .scanlines {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.08) 2px,
+          rgba(0, 0, 0, 0.08) 4px
+        );
+        pointer-events: none;
+        z-index: 11;
+        opacity: 0.4;
+      }
+
+      /* Vignette */
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at center,
+          transparent 50%,
+          rgba(0, 0, 0, 0.7) 100%
+        );
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      /* Central word (used by variant 1) */
+      #word-stage {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      .word-letters {
+        display: flex;
+        align-items: baseline;
+        gap: 0;
+        position: relative;
+      }
+
+      .letter {
+        font-family: 'Syne', sans-serif;
+        font-weight: 900;
+        font-size: clamp(64px, 10vw, 120px);
+        line-height: 1;
+        letter-spacing: -2px;
+        position: relative;
+        display: inline-block;
+        color: #fff;
+      }
+
+      .letter.dim {
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      #letter-x {
+        color: var(--accent);
+        text-shadow:
+          0 0 30px var(--accent),
+          0 0 60px var(--accent),
+          0 0 100px rgba(79, 255, 176, 0.4);
+        position: relative;
+      }
+
+      .the-prefix {
+        font-family: 'Syne', sans-serif;
+        font-weight: 400;
+        font-size: clamp(14px, 2vw, 22px);
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        position: absolute;
+        top: -28px;
+        left: 0;
+        right: 0;
+        text-align: center;
+      }
+
+      .tagline {
+        position: absolute;
+        bottom: -32px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: rgba(255, 255, 255, 0.25);
+        text-transform: uppercase;
+        font-family: 'DM Mono', monospace;
+      }
+
+      /* Progress bar */
+      .progress-wrap {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        z-index: 20;
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 1px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        width: 0%;
+        transition: width 0.05s linear;
+        box-shadow: 0 0 8px var(--accent);
+      }
+
+      .progress-label {
+        text-align: center;
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.25);
+        letter-spacing: 0.15em;
+        margin-top: 8px;
+        text-transform: uppercase;
+      }
+
+      /* ===== CONTROLS ===== */
+      .controls {
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 20px 24px;
+      }
+
+      .controls-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .controls-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .ctrl {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .ctrl label {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .ctrl label span {
+        color: var(--accent);
+        font-size: 10px;
+      }
+
+      input[type='range'] {
+        width: 100%;
+        -webkit-appearance: none;
+        height: 3px;
+        background: var(--surface2);
+        border-radius: 2px;
+        outline: none;
+        accent-color: var(--accent);
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--accent);
+        cursor: pointer;
+        box-shadow: 0 0 6px rgba(79, 255, 176, 0.5);
+      }
+
+      .ctrl select {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        border-radius: 5px;
+        outline: none;
+        cursor: pointer;
+      }
+      .ctrl select option {
+        background: var(--surface2);
+      }
+
+      .ctrl-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .toggle-track {
+        width: 32px;
+        height: 17px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        position: relative;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+      .toggle-track.on {
+        background: rgba(79, 255, 176, 0.3);
+        border-color: var(--accent);
+      }
+      .toggle-thumb {
+        width: 11px;
+        height: 11px;
+        background: var(--muted);
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: all 0.2s;
+      }
+      .toggle-track.on .toggle-thumb {
+        left: 17px;
+        background: var(--accent);
+      }
+      .ctrl-toggle .toggle-label {
+        font-size: 9px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      /* Variant-specific controls shown/hidden */
+      .ctrl-group {
+        display: contents;
+      }
+      .ctrl-group.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-brand">THE METRIX · SPLASH</div>
+
+      <div class="variant-switcher">
+        <button class="vbtn active" onclick="setVariant('flyIn', this)">
+          ① X Fly-In
+        </button>
+        <button class="vbtn" onclick="setVariant('matrixRain', this)">
+          ② Matrix Rain
+        </button>
+        <button class="vbtn" onclick="setVariant('glitch', this)">
+          ③ Digital Glitch
+        </button>
+        <button class="vbtn" onclick="setVariant('dataStream', this)">
+          ④ Data Stream
+        </button>
+        <button class="vbtn" onclick="setVariant('neonFlicker', this)">
+          ⑤ Neon Flicker
+        </button>
+        <button class="vbtn" onclick="setVariant('hologram', this)">
+          ⑥ Hologram
+        </button>
+      </div>
+
+      <div class="toolbar-actions">
+        <button class="btn btn-ghost" onclick="replay()">↺ Replay</button>
+        <button class="btn btn-primary" onclick="fullscreen()">
+          ⤢ Fullscreen
+        </button>
+      </div>
+    </div>
+
+    <!-- STAGE -->
+    <div class="stage-wrap" id="stage-wrap">
+      <canvas id="stage"></canvas>
+      <div class="scanlines" id="scanlines"></div>
+      <div class="vignette"></div>
+
+      <!-- Word overlay (Variant 1 & 3) -->
+      <div id="word-stage">
+        <div style="position: relative">
+          <div class="the-prefix" id="the-prefix" style="opacity: 0">THE</div>
+          <div class="word-letters" id="word-letters">
+            <span class="letter dim" id="l-m" style="opacity: 0">M</span>
+            <span class="letter dim" id="l-e" style="opacity: 0">E</span>
+            <span class="letter dim" id="l-t" style="opacity: 0">T</span>
+            <span class="letter dim" id="l-r" style="opacity: 0">R</span>
+            <span class="letter dim" id="l-i" style="opacity: 0">I</span>
+            <span class="letter" id="l-c" style="opacity: 0">C</span>
+            <span class="letter" id="letter-x" style="opacity: 0; position: absolute;">X</span>
+          </div>
+          <div class="tagline" id="tagline" style="opacity: 0">
+            Engineering Intelligence Platform
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="progress-wrap" style="opacity: 0">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-label" id="progress-label">Initializing...</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="controls-header">
+        <div class="controls-title">⚙ Animation Controls · Live</div>
+      </div>
+      <div class="controls-grid">
+        <!-- SHARED -->
+        <div class="ctrl">
+          <label>Speed <span id="lbl-speed">1.0×</span></label>
+          <input
+            type="range"
+            id="ctrl-speed"
+            min="0.3"
+            max="3"
+            step="0.1"
+            value="1"
+            oninput="updateCtrl('speed', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-toggle" onclick="toggleCtrl('scanlines-on')">
+          <div class="toggle-label">Scanlines</div>
+          <div class="toggle-track on" id="tog-scanlines-on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="ctrl ctrl-toggle" onclick="toggleCtrl('vignette-on')">
+          <div class="toggle-label">Vignette</div>
+          <div class="toggle-track on" id="tog-vignette-on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="ctrl ctrl-toggle" onclick="toggleCtrl('progress-on')">
+          <div class="toggle-label">Progress Bar</div>
+          <div class="toggle-track on" id="tog-progress-on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- FLY-IN specific -->
+        <div class="ctrl ctrl-group" id="grp-flyIn">
+          <label>X Travel Distance <span id="lbl-travel">600px</span></label>
+          <input
+            type="range"
+            id="ctrl-travel"
+            min="100"
+            max="1200"
+            step="50"
+            value="600"
+            oninput="updateCtrl('travel', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group" id="grp-flyIn2">
+          <label>Glow Intensity <span id="lbl-glow">1.0</span></label>
+          <input
+            type="range"
+            id="ctrl-glow"
+            min="0"
+            max="3"
+            step="0.1"
+            value="1"
+            oninput="updateCtrl('glow', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group" id="grp-flyIn3">
+          <label>Motion Blur Trails <span id="lbl-trails">8</span></label>
+          <input
+            type="range"
+            id="ctrl-trails"
+            min="0"
+            max="24"
+            step="1"
+            value="8"
+            oninput="updateCtrl('trails', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group" id="grp-flyIn4">
+          <label>Letter Stagger <span id="lbl-stagger">80ms</span></label>
+          <input
+            type="range"
+            id="ctrl-stagger"
+            min="0"
+            max="300"
+            step="10"
+            value="80"
+            oninput="updateCtrl('stagger', this.value)"
+          />
+        </div>
+
+        <!-- MATRIX RAIN specific -->
+        <div class="ctrl ctrl-group hidden" id="grp-matrix">
+          <label>Column Density <span id="lbl-density">18</span></label>
+          <input
+            type="range"
+            id="ctrl-density"
+            min="8"
+            max="40"
+            step="1"
+            value="18"
+            oninput="updateCtrl('density', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-matrix2">
+          <label>Rain Speed <span id="lbl-rain-speed">1.2</span></label>
+          <input
+            type="range"
+            id="ctrl-rain-speed"
+            min="0.3"
+            max="4"
+            step="0.1"
+            value="1.2"
+            oninput="updateCtrl('rainSpeed', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-matrix3">
+          <label>Fade Length <span id="lbl-fade">0.05</span></label>
+          <input
+            type="range"
+            id="ctrl-fade"
+            min="0.01"
+            max="0.25"
+            step="0.01"
+            value="0.05"
+            oninput="updateCtrl('fade', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-matrix4">
+          <label>Resolve Delay <span id="lbl-resolve">3.5s</span></label>
+          <input
+            type="range"
+            id="ctrl-resolve"
+            min="1"
+            max="8"
+            step="0.5"
+            value="3.5"
+            oninput="updateCtrl('resolve', this.value)"
+          />
+        </div>
+
+        <!-- GLITCH specific -->
+        <div class="ctrl ctrl-group hidden" id="grp-glitch">
+          <label>Glitch Intensity <span id="lbl-glitch-int">1.0</span></label>
+          <input
+            type="range"
+            id="ctrl-glitch-int"
+            min="0.3"
+            max="3"
+            step="0.1"
+            value="1"
+            oninput="updateCtrl('glitchInt', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-glitch2">
+          <label>Scramble Speed <span id="lbl-scramble">60ms</span></label>
+          <input
+            type="range"
+            id="ctrl-scramble"
+            min="20"
+            max="150"
+            step="10"
+            value="60"
+            oninput="updateCtrl('scramble', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-glitch3">
+          <label>RGB Split <span id="lbl-rgb">5px</span></label>
+          <input
+            type="range"
+            id="ctrl-rgb"
+            min="0"
+            max="15"
+            step="1"
+            value="5"
+            oninput="updateCtrl('rgb', this.value)"
+          />
+        </div>
+
+        <div class="ctrl ctrl-group hidden" id="grp-glitch4">
+          <label>Resolve Time <span id="lbl-resolve-glitch">2.5s</span></label>
+          <input
+            type="range"
+            id="ctrl-resolve-glitch"
+            min="1"
+            max="5"
+            step="0.5"
+            value="2.5"
+            oninput="updateCtrl('resolveGlitch', this.value)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ===================== STATE =====================
+      let currentVariant = 'flyIn'
+      let animHandle = null
+      let startTime = null
+
+      const cfg = {
+        speed: 1.0,
+        travel: 600,
+        glow: 1.0,
+        trails: 8,
+        stagger: 80,
+        density: 18,
+        rainSpeed: 1.2,
+        fade: 0.05,
+        resolve: 3.5,
+        glitchInt: 1.0,
+        scramble: 60,
+        rgb: 5,
+        resolveGlitch: 2.5,
+        'scanlines-on': true,
+        'vignette-on': true,
+        'progress-on': true
+      }
+
+      // ===================== CONTROLS =====================
+      function updateCtrl(key, val) {
+        cfg[key] = parseFloat(val)
+        const labels = {
+          speed: ['lbl-speed', (v) => v + '×'],
+          travel: ['lbl-travel', (v) => v + 'px'],
+          glow: ['lbl-glow', (v) => v],
+          trails: ['lbl-trails', (v) => v],
+          stagger: ['lbl-stagger', (v) => v + 'ms'],
+          density: ['lbl-density', (v) => v],
+          rainSpeed: ['lbl-rain-speed', (v) => v],
+          fade: ['lbl-fade', (v) => v],
+          resolve: ['lbl-resolve', (v) => v + 's'],
+          glitchInt: ['lbl-glitch-int', (v) => v],
+          scramble: ['lbl-scramble', (v) => v + 'ms'],
+          rgb: ['lbl-rgb', (v) => v + 'px'],
+          resolveGlitch: ['lbl-resolve-glitch', (v) => v + 's']
+        }
+        if (labels[key]) {
+          const [id, fmt] = labels[key]
+          document.getElementById(id).textContent = fmt(val)
+        }
+        replay()
+      }
+
+      function toggleCtrl(key) {
+        cfg[key] = !cfg[key]
+        const track = document.getElementById('tog-' + key)
+        track.classList.toggle('on', cfg[key])
+        applyToggles()
+      }
+
+      function applyToggles() {
+        document.getElementById('scanlines').style.opacity = cfg['scanlines-on']
+          ? '0.4'
+          : '0'
+        document.querySelector('.vignette').style.opacity = cfg['vignette-on']
+          ? '1'
+          : '0'
+      }
+
+      // ===================== VARIANT SWITCHER =====================
+      function setVariant(v, btn) {
+        currentVariant = v
+        document
+          .querySelectorAll('.vbtn')
+          .forEach((b) => b.classList.remove('active'))
+        btn.classList.add('active')
+
+        // Show/hide control groups
+        document
+          .querySelectorAll('.ctrl-group')
+          .forEach((el) => el.classList.add('hidden'))
+        const groups = {
+          flyIn: ['grp-flyIn', 'grp-flyIn2', 'grp-flyIn3', 'grp-flyIn4'],
+          matrixRain: ['grp-matrix', 'grp-matrix2', 'grp-matrix3', 'grp-matrix4'],
+          glitch: ['grp-glitch', 'grp-glitch2', 'grp-glitch3', 'grp-glitch4'],
+          dataStream: ['grp-dataStream'],
+          neonFlicker: ['grp-neonFlicker'],
+          hologram: ['grp-hologram']
+        }
+        ;(groups[v] || []).forEach((id) => {
+          const el = document.getElementById(id)
+          if (el) el.classList.remove('hidden')
+        })
+
+        replay()
+      }
+
+      function replay() {
+        cancelAnimationFrame(animHandle)
+        startTime = null
+        resetStage()
+        applyToggles()
+        setTimeout(() => {
+          if (currentVariant === 'flyIn') startFlyIn()
+          else if (currentVariant === 'matrixRain') startMatrixRain()
+          else if (currentVariant === 'glitch') startGlitch()
+          else if (currentVariant === 'dataStream') startDataStream()
+          else if (currentVariant === 'neonFlicker') startNeonFlicker()
+          else if (currentVariant === 'hologram') startHologram()
+        }, 80)
+      }
+
+      function resetStage() {
+        const canvas = document.getElementById('stage')
+        const ctx = canvas.getContext('2d')
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        document.getElementById('word-stage').style.display = 'flex'
+        ;['l-m', 'l-e', 'l-t', 'l-r', 'l-i', 'l-c', 'letter-x'].forEach(
+          (id) => {
+            const el = document.getElementById(id)
+            el.style.opacity = '0'
+            el.style.transform = ''
+            el.style.transition = ''
+            el.style.filter = ''
+          }
+        )
+        document.getElementById('letter-x').style.position = 'absolute'
+        document.getElementById('the-prefix').style.opacity = '0'
+        document.getElementById('tagline').style.opacity = '0'
+        document.getElementById('letter-x').style.opacity = '0'
+        const pw = document.getElementById('progress-wrap')
+        pw.style.opacity = cfg['progress-on'] ? '1' : '0'
+        document.getElementById('progress-fill').style.width = '0%'
+      }
+
+      // ===================== CANVAS SETUP =====================
+      function setupCanvas() {
+        const wrap = document.getElementById('stage-wrap')
+        const canvas = document.getElementById('stage')
+        canvas.width = wrap.offsetWidth
+        canvas.height = wrap.offsetHeight
+        return canvas
+      }
+
+      // ===================== PROGRESS =====================
+      let progressTimer = null
+      function runProgress(duration) {
+        if (!cfg['progress-on']) return
+        const fill = document.getElementById('progress-fill')
+        const label = document.getElementById('progress-label')
+        const msgs = [
+          'Initializing...',
+          'Loading metrics...',
+          'Syncing DORA...',
+          'Building insights...',
+          'Ready.'
+        ]
+        let elapsed = 0
+        const interval = 50
+        clearInterval(progressTimer)
+        progressTimer = setInterval(() => {
+          elapsed += interval
+          const pct = Math.min(100, (elapsed / duration) * 100)
+          fill.style.width = pct + '%'
+          const msgIdx = Math.floor((pct / 100) * (msgs.length - 1))
+          label.textContent = msgs[msgIdx]
+          if (pct >= 100) {
+            clearInterval(progressTimer)
+            label.textContent = 'Ready.'
+          }
+        }, interval)
+      }
+
+      // ===================== VARIANT 1: X FLY-IN =====================
+      function startFlyIn() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'none' // not needed for this variant — CSS animation
+        document.getElementById('word-stage').style.display = 'flex'
+
+        const s = cfg.speed
+        const stagger = cfg.stagger / s
+        const ids = ['l-m', 'l-e', 'l-t', 'l-r', 'l-i', 'l-c']
+
+        // Fade in METRIC letters with stagger
+        ids.forEach((id, i) => {
+          const el = document.getElementById(id)
+          setTimeout(
+            () => {
+              el.style.transition = `opacity ${300 / s}ms ease, transform ${300 / s}ms ease`
+              el.style.transform = 'translateY(0)'
+              el.style.opacity = '1'
+            },
+            200 + i * stagger
+          )
+        })
+
+        // "THE" fades in
+        setTimeout(() => {
+          const prefix = document.getElementById('the-prefix')
+          prefix.style.transition = `opacity ${400 / s}ms ease`
+          prefix.style.opacity = '1'
+        }, 100)
+
+        // X flies in from right, replaces C
+        const cEl = document.getElementById('l-c')
+        const xEl = document.getElementById('letter-x')
+        const flyDelay = 200 + ids.length * stagger + 200 / s
+
+        setTimeout(() => {
+          // Position X to replace C
+          xEl.style.left = cEl.offsetLeft + 'px'
+          xEl.style.top = '0px'
+
+          // Momentarily show C, then glitch it out
+          setTimeout(() => {
+            // C flickers
+            let flickers = 0
+            const flickerInterval = setInterval(() => {
+              cEl.style.opacity = cEl.style.opacity === '0' ? '1' : '0'
+              flickers++
+              if (flickers >= 6) {
+                clearInterval(flickerInterval)
+                cEl.style.opacity = '0'
+                // X crashes in with motion blur trails on canvas
+                launchX(xEl, cEl, s)
+              }
+            }, 60 / s)
+          }, 300 / s)
+        }, flyDelay)
+
+        // Tagline
+        setTimeout(
+          () => {
+            const tl = document.getElementById('tagline')
+            tl.style.transition = `opacity ${600 / s}ms ease`
+            tl.style.opacity = '1'
+          },
+          flyDelay + 1200 / s
+        )
+
+        runProgress(((flyDelay + 1400 / s) / 1000) * 1000 * (1 / s))
+      }
+
+      function launchX(xEl, cEl, s) {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width,
+          h = canvas.height
+
+        // Get X final position on screen (using C's position as reference)
+        const cRect = cEl.getBoundingClientRect()
+        const wrapRect = document
+          .getElementById('stage-wrap')
+          .getBoundingClientRect()
+        const finalX = cRect.left - wrapRect.left + cRect.width / 2
+        const finalY = cRect.top - wrapRect.top + cRect.height / 2
+
+        let currentX = finalX + cfg.travel
+        const targetX = finalX
+        let progress = 0
+        const duration = 700 / s
+        const fontSize = parseInt(window.getComputedStyle(cEl).fontSize)
+        const trailCount = cfg.trails
+
+        function easeOutExpo(t) {
+          return t === 1 ? 1 : 1 - Math.pow(2, -15 * t)
+        }
+
+        function drawTrail(x, alpha, blur) {
+          ctx.save()
+          ctx.globalAlpha = alpha
+          ctx.filter = `blur(${blur}px)`
+          ctx.font = `900 ${fontSize}px Syne, sans-serif`
+          ctx.fillStyle = `hsl(156, 100%, ${50 + blur * 2}%)`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'bottom'
+          ctx.fillText('X', x - 8, finalY + fontSize * 0.56)
+          ctx.restore()
+        }
+
+        let lastTime = null
+
+        function frame(now) {
+          if (!lastTime) lastTime = now
+          const dt = (now - lastTime) / duration
+          lastTime = now
+          progress = Math.min(1, progress + dt)
+          const eased = easeOutExpo(progress)
+
+          // Clear canvas completely each frame
+          ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+          ctx.fillRect(0, 0, w, h)
+
+          // Motion blur trails
+          for (let i = trailCount; i >= 0; i--) {
+            const trailProgress = Math.max(0, progress - (i / trailCount) * 0.3)
+            const trailEased = easeOutExpo(trailProgress)
+            const tx = currentX + (targetX - currentX) * trailEased
+            // Actually use interpolated positions
+            const trailX =
+              finalX +
+              cfg.travel * (1 - easeOutExpo(Math.max(0, progress - i * 0.02)))
+            const alpha = (1 - i / trailCount) * 0.15 * cfg.glow
+            const blur = (i / trailCount) * 8
+            if (alpha > 0.01) drawTrail(trailX, alpha, blur)
+          }
+
+          // Main X
+          const ix = finalX + cfg.travel * (1 - eased)
+          ctx.save()
+          ctx.font = `900 ${fontSize}px Syne, sans-serif`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'bottom'
+
+          // Glow intensity increases as X gets closer to landing
+          const glowIntensity = Math.pow(progress, 2) // Quadratic ramp-up
+
+          // Glow layers with increasing intensity
+          for (let g = 3; g >= 0; g--) {
+            ctx.save()
+            const baseBlur = g * 6 * cfg.glow
+            const enhancedBlur = baseBlur * (1 + glowIntensity * 2) // Glow gets bigger as it lands
+            ctx.filter = `blur(${enhancedBlur}px)`
+            ctx.globalAlpha = (0.15 + (1 - g / 3) * 0.7) * glowIntensity * 0.8
+            ctx.fillStyle = '#4fffb0'
+            ctx.fillText('X', ix - 8, finalY + fontSize * 0.56)
+            ctx.restore()
+          }
+          ctx.restore()
+
+          if (progress < 1) {
+            animHandle = requestAnimationFrame(frame)
+          } else if (!xEl.dataset.transitioned) {
+            // Mark as transitioning to prevent duplicate execution
+            xEl.dataset.transitioned = 'true'
+
+            // Lock X in DOM at C's position (keep absolute positioning)
+            xEl.style.position = 'absolute'
+            xEl.style.left = cEl.offsetLeft + 'px'
+            xEl.style.top = '0px'
+
+            // Start with the current glow state from canvas, fully transparent
+            const glowVal = cfg.glow
+            xEl.style.textShadow = `0 0 ${10 * glowVal}px var(--accent), 0 0 ${25 * glowVal}px var(--accent), 0 0 ${40 * glowVal}px rgba(79,255,176,0.4)`
+            xEl.style.opacity = '0'
+
+            // Fade in DOM X while canvas is still visible (crossfade)
+            xEl.style.transition = 'opacity 200ms ease-out, text-shadow 600ms ease-out'
+            setTimeout(() => {
+              xEl.style.opacity = '1'
+              xEl.style.textShadow = `0 0 ${20 * glowVal}px var(--accent), 0 0 ${50 * glowVal}px var(--accent), 0 0 ${80 * glowVal}px rgba(79,255,176,0.4)`
+            }, 30)
+
+            // Fade out canvas during the crossfade
+            let fadeProgress = 0
+            const fadeFrames = 10 // 10 frames for smooth fade
+            const fadeInterval = setInterval(() => {
+              fadeProgress++
+              canvas.style.opacity = 1 - (fadeProgress / fadeFrames)
+
+              if (fadeProgress >= fadeFrames) {
+                clearInterval(fadeInterval)
+                ctx.clearRect(0, 0, w, h)
+                canvas.style.display = 'none'
+                canvas.style.opacity = '1' // Reset for next time
+              }
+            }, 20)
+          }
+        }
+
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== VARIANT 2: MATRIX RAIN =====================
+      function startMatrixRain() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        document.getElementById('word-stage').style.display = 'none'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width,
+          h = canvas.height
+
+        const fontSize = 14
+        const cols = Math.floor((w / fontSize) * (cfg.density / 18))
+        const drops = Array(cols)
+          .fill(0)
+          .map(() => Math.random() * -50)
+        const chars =
+          'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ∇∆∑∏∂ΩπΦΨ'
+        const targetWord = 'METRIX'
+        const resolveAfter = (cfg.resolve * 1000) / cfg.speed
+        const rainSpd = cfg.rainSpeed * cfg.speed
+
+        let resolving = false
+        let resolveProgress = 0
+        let resolveStart = null
+        let elapsed = 0
+        let lastTime = null
+
+        // Where to draw the final word (centered) - match fly-in size
+        const wordH = Math.min(120, Math.max(64, w * 0.1)) // clamp(64px, 10vw, 120px)
+        ctx.font = `900 ${wordH}px Syne, sans-serif`
+        ctx.letterSpacing = '-2px' // Match fly-in letter spacing
+        const wordW = ctx.measureText(targetWord).width
+        const wordX = (w - wordW) / 2
+        const wordY = h / 2
+
+        function frame(now) {
+          if (!lastTime) lastTime = now
+          const dt = now - lastTime
+          lastTime = now
+          elapsed += dt
+
+          if (!resolving && elapsed > resolveAfter) {
+            resolving = true
+            resolveStart = now
+          }
+
+          // Fade trail - stronger fade to reduce character overlap
+          ctx.fillStyle = `rgba(0,0,0,${Math.min(0.15, cfg.fade * cfg.speed * 3)})`
+          ctx.fillRect(0, 0, w, h)
+
+          if (!resolving) {
+            // Classic rain
+            ctx.font = `${fontSize}px DM Mono, monospace`
+            drops.forEach((y, i) => {
+              const char = chars[Math.floor(Math.random() * chars.length)]
+              const x = i * (w / cols)
+              // Lead character bright
+              ctx.fillStyle = '#afffdf'
+              ctx.fillText(char, x, y * fontSize)
+              // Rest green
+              ctx.fillStyle = '#00ff41'
+              ctx.fillText(char, x, y * fontSize - fontSize)
+              drops[i] += rainSpd
+              if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0
+            })
+          } else {
+            // Continue rain but fade it out
+            const rp = Math.min(1, (now - resolveStart) / (1500 / cfg.speed))
+            ctx.font = `${fontSize}px DM Mono, monospace`
+            drops.forEach((y, i) => {
+              const char = chars[Math.floor(Math.random() * chars.length)]
+              const x = i * (w / cols)
+              ctx.globalAlpha = (1 - rp) * 0.6
+              ctx.fillStyle = '#00ff41'
+              ctx.fillText(char, x, y * fontSize)
+              ctx.globalAlpha = 1
+              drops[i] += rainSpd * (1 - rp * 0.8)
+              if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0
+            })
+
+            // Word emerges
+            const wordProgress = Math.max(
+              0,
+              (now - resolveStart - 300 / cfg.speed) / (1200 / cfg.speed)
+            )
+            const wp = Math.min(1, wordProgress)
+
+            // Clear the word area first to prevent overlap
+            if (wp > 0.3) {
+              ctx.fillStyle = 'rgba(0,0,0,0.9)'
+              ctx.fillRect(wordX - 40, wordY - wordH, wordW + 80, wordH * 2)
+            }
+
+            // Glow halo - less intense
+            for (let g = 2; g >= 0; g--) {
+              ctx.save()
+              ctx.globalAlpha = wp * 0.2 * (1 - g / 2)
+              ctx.filter = `blur(${g * 10}px)`
+              ctx.font = `900 ${wordH}px Syne, sans-serif`
+              ctx.letterSpacing = '-2px'
+              ctx.fillStyle = '#4fffb0'
+              ctx.textBaseline = 'middle'
+              ctx.fillText(targetWord, wordX, wordY)
+              ctx.restore()
+            }
+
+            // Main word — letters resolve one by one
+            ctx.font = `900 ${wordH}px Syne, sans-serif`
+            ctx.letterSpacing = '-2px'
+            ctx.textBaseline = 'middle'
+            ctx.filter = 'none'
+            let xOffset = wordX
+            for (let li = 0; li < targetWord.length; li++) {
+              const letterProgress = Math.min(
+                1,
+                Math.max(0, (wp - (li / targetWord.length) * 0.5) * 2)
+              )
+              const isX = li === targetWord.length - 1
+              if (letterProgress > 0) {
+                // Scramble → resolve
+                const char =
+                  letterProgress > 0.85
+                    ? targetWord[li]
+                    : chars[Math.floor(Math.random() * chars.length)]
+                ctx.globalAlpha = letterProgress
+                ctx.fillStyle = isX ? '#4fffb0' : '#e8e8f0'
+                if (isX) {
+                  // Glow X
+                  ctx.save()
+                  ctx.shadowColor = '#4fffb0'
+                  ctx.shadowBlur = 25 * letterProgress
+                  ctx.fillText(char, xOffset, wordY)
+                  ctx.restore()
+                } else {
+                  ctx.fillText(char, xOffset, wordY)
+                }
+                ctx.globalAlpha = 1
+              }
+              xOffset += ctx.measureText(targetWord[li]).width
+            }
+
+            // "THE" and tagline
+            if (wp > 0.7) {
+              const tp = Math.min(1, (wp - 0.7) / 0.3)
+              ctx.globalAlpha = tp * 0.5
+              ctx.font = `400 ${wordH * 0.18}px Syne, sans-serif`
+              ctx.fillStyle = '#fff'
+              ctx.letterSpacing = '0.3em'
+              ctx.textAlign = 'center'
+              ctx.fillText('THE', w / 2, wordY - wordH * 0.7)
+              ctx.font = `400 ${wordH * 0.09}px DM Mono, monospace`
+              ctx.fillStyle = '#fff'
+              ctx.fillText(
+                'ENGINEERING INTELLIGENCE PLATFORM',
+                w / 2,
+                wordY + wordH * 0.7
+              )
+              ctx.textAlign = 'left'
+              ctx.letterSpacing = '0'
+              ctx.globalAlpha = 1
+            }
+
+            resolveProgress = wp
+            if (wp >= 1) {
+              runProgress(0)
+              return
+            }
+          }
+
+          animHandle = requestAnimationFrame(frame)
+        }
+
+        runProgress(resolveAfter + 1500 / cfg.speed)
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== VARIANT 3: DIGITAL GLITCH =====================
+      function startGlitch() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        document.getElementById('word-stage').style.display = 'none'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width,
+          h = canvas.height
+        const cx = w / 2,
+          cy = h / 2
+
+        const wordH = Math.floor(w * 0.1)
+        const targetWord = 'METRIX'
+        const scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*'
+        const resolveTime = (cfg.resolveGlitch * 1000) / cfg.speed
+        const scrambleInterval = cfg.scramble / cfg.speed
+
+        let startTime = null
+        let scrambleTimer = null
+        const letterStates = targetWord.split('').map((char, i) => ({
+          target: char,
+          current: char,
+          resolved: false,
+          resolveAt: (i / targetWord.length) * resolveTime * 0.7 + resolveTime * 0.3
+        }))
+
+        function scrambleLetters() {
+          letterStates.forEach(state => {
+            if (!state.resolved) {
+              state.current = scrambleChars[Math.floor(Math.random() * scrambleChars.length)]
+            }
+          })
+        }
+
+        scrambleTimer = setInterval(scrambleLetters, scrambleInterval)
+
+        function frame(now) {
+          if (!startTime) startTime = now
+          const elapsed = now - startTime
+          const progress = Math.min(1, elapsed / resolveTime)
+
+          ctx.clearRect(0, 0, w, h)
+
+          // Update resolved states
+          letterStates.forEach(state => {
+            if (!state.resolved && elapsed >= state.resolveAt) {
+              state.resolved = true
+              state.current = state.target
+            }
+          })
+
+          // Draw word with glitch effects
+          ctx.font = `900 ${wordH}px Syne, sans-serif`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+
+          let xOffset = 0
+          const wordWidth = ctx.measureText(targetWord).width
+          let startX = cx - wordWidth / 2
+
+          letterStates.forEach((state, i) => {
+            const letterWidth = ctx.measureText(state.target).width
+            const x = startX + xOffset + letterWidth / 2
+            const isX = i === targetWord.length - 1
+
+            // RGB split effect (stronger when unresolved)
+            const splitAmount = state.resolved ? 0 : cfg.rgb * cfg.glitchInt
+
+            if (splitAmount > 0) {
+              // Red channel
+              ctx.save()
+              ctx.globalAlpha = 0.7
+              ctx.fillStyle = '#ff0000'
+              ctx.fillText(state.current, x - splitAmount, cy)
+              ctx.restore()
+
+              // Blue channel
+              ctx.save()
+              ctx.globalAlpha = 0.7
+              ctx.fillStyle = '#0000ff'
+              ctx.fillText(state.current, x + splitAmount, cy)
+              ctx.restore()
+            }
+
+            // Main letter
+            ctx.save()
+            const alpha = state.resolved ? 1 : 0.8
+            ctx.globalAlpha = alpha
+            ctx.fillStyle = isX && state.resolved ? '#4fffb0' : '#e8e8f0'
+
+            // Glow for X when resolved
+            if (isX && state.resolved) {
+              ctx.shadowColor = '#4fffb0'
+              ctx.shadowBlur = 30
+            }
+
+            ctx.fillText(state.current, x, cy)
+            ctx.restore()
+
+            xOffset += letterWidth
+          })
+
+          // "THE" and tagline
+          if (progress > 0.7) {
+            const tp = Math.min(1, (progress - 0.7) / 0.3)
+            ctx.globalAlpha = tp * 0.5
+            ctx.font = `400 ${wordH * 0.18}px Syne, sans-serif`
+            ctx.fillStyle = '#fff'
+            ctx.fillText('THE', cx, cy - wordH * 0.72)
+            ctx.font = `400 ${wordH * 0.09}px DM Mono, monospace`
+            ctx.fillText('ENGINEERING INTELLIGENCE PLATFORM', cx, cy + wordH * 0.72)
+            ctx.globalAlpha = 1
+          }
+
+          if (progress < 1 || !letterStates.every(s => s.resolved)) {
+            animHandle = requestAnimationFrame(frame)
+          } else {
+            clearInterval(scrambleTimer)
+          }
+        }
+
+        runProgress(resolveTime)
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== VARIANT 4: DATA STREAM =====================
+      function startDataStream() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        document.getElementById('word-stage').style.display = 'none'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width, h = canvas.height
+
+        const targetWord = 'METRIX'
+        const wordH = Math.min(120, Math.max(64, w * 0.1))
+        const cx = w / 2
+        const cy = h / 2
+
+        // ASCII characters for data streams
+        const chars = '01アイウエオ@#$%&*+=<>[]{}▓▒░'
+
+        // Particles that will form letters
+        const particles = []
+        const particleCount = 400
+
+        // Create particles from all directions
+        for (let i = 0; i < particleCount; i++) {
+          const angle = (i / particleCount) * Math.PI * 2
+          const distance = 300 + Math.random() * 200
+
+          particles.push({
+            x: cx + Math.cos(angle) * distance,
+            y: cy + Math.sin(angle) * distance,
+            targetX: cx + (Math.random() - 0.5) * wordH * 3.5,
+            targetY: cy + (Math.random() - 0.5) * wordH * 0.6,
+            char: chars[Math.floor(Math.random() * chars.length)],
+            speed: 0.03 + Math.random() * 0.04,
+            arrived: false,
+            opacity: 0.3 + Math.random() * 0.7
+          })
+        }
+
+        let progress = 0
+        let startTime = null
+
+        function frame(now) {
+          if (!startTime) startTime = now
+          progress = Math.min(1, (now - startTime) / 2800)
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
+          ctx.fillRect(0, 0, w, h)
+
+          // Move particles toward targets
+          particles.forEach(particle => {
+            if (!particle.arrived) {
+              const dx = particle.targetX - particle.x
+              const dy = particle.targetY - particle.y
+              const dist = Math.sqrt(dx * dx + dy * dy)
+
+              if (dist < 5) {
+                particle.arrived = true
+              } else {
+                particle.x += dx * particle.speed
+                particle.y += dy * particle.speed
+              }
+            }
+
+            // Draw particle
+            ctx.save()
+            ctx.font = '12px DM Mono, monospace'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+
+            const alpha = particle.arrived
+              ? particle.opacity * progress
+              : particle.opacity * 0.6
+            ctx.globalAlpha = alpha
+
+            ctx.fillStyle = particle.arrived ? '#4fffb0' : '#00ff41'
+            if (particle.arrived) {
+              ctx.shadowColor = '#4fffb0'
+              ctx.shadowBlur = 8
+            }
+
+            ctx.fillText(particle.char, particle.x, particle.y)
+            ctx.restore()
+          })
+
+          // Draw word overlay once particles have formed the shape
+          if (progress > 0.5) {
+            const wordProgress = Math.min(1, (progress - 0.5) / 0.5)
+
+            ctx.save()
+            ctx.font = `900 ${wordH}px Syne, sans-serif`
+            ctx.letterSpacing = '-2px'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillStyle = '#4fffb0'
+            ctx.shadowColor = '#4fffb0'
+            ctx.shadowBlur = 40 * wordProgress
+            ctx.globalAlpha = wordProgress * 0.9
+            ctx.fillText(targetWord, cx, cy)
+            ctx.restore()
+          }
+
+          // "THE" and tagline
+          if (progress > 0.8) {
+            const tp = Math.min(1, (progress - 0.8) / 0.2)
+            ctx.save()
+            ctx.globalAlpha = tp * 0.5
+            ctx.font = `400 ${wordH * 0.18}px Syne, sans-serif`
+            ctx.textAlign = 'center'
+            ctx.letterSpacing = '0.3em'
+            ctx.fillStyle = '#fff'
+            ctx.fillText('THE', cx, cy - wordH * 0.72)
+            ctx.font = `400 ${wordH * 0.09}px DM Mono, monospace`
+            ctx.letterSpacing = '0.3em'
+            ctx.fillText('ENGINEERING INTELLIGENCE PLATFORM', cx, cy + wordH * 0.72)
+            ctx.restore()
+          }
+
+          if (progress < 1) {
+            animHandle = requestAnimationFrame(frame)
+          }
+        }
+
+        runProgress(2800)
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== VARIANT 5: NEON FLICKER =====================
+      function startNeonFlicker() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        document.getElementById('word-stage').style.display = 'none'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width, h = canvas.height
+
+        const targetWord = 'METRIX'
+        const wordH = Math.min(120, Math.max(64, w * 0.1))
+        const cx = w / 2
+        const cy = h / 2
+
+        // Each letter powers on segment by segment
+        const letterStates = targetWord.split('').map(() => ({
+          segments: 7,  // Simplified 7-segment style
+          litSegments: 0,
+          flickering: false,
+          fullyLit: false
+        }))
+
+        let progress = 0
+        let startTime = null
+
+        function frame(now) {
+          if (!startTime) startTime = now
+          progress = Math.min(1, (now - startTime) / 3500)
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+          ctx.fillRect(0, 0, w, h)
+
+          // Power on letters one by one
+          letterStates.forEach((state, i) => {
+            const letterProgress = Math.max(0, progress - (i / targetWord.length) * 0.5)
+
+            if (letterProgress > 0 && !state.fullyLit) {
+              state.litSegments = Math.min(state.segments, Math.floor(letterProgress * state.segments * 3))
+
+              // Random flicker only during power-on phase
+              if (Math.random() > 0.92) {
+                state.flickering = !state.flickering
+              }
+
+              if (state.litSegments >= state.segments) {
+                state.fullyLit = true
+                state.flickering = false // Stop flickering when fully lit
+              }
+            }
+          })
+
+          // Draw letters with neon glow
+          ctx.save()
+          ctx.font = `900 ${wordH}px Syne, sans-serif`
+          ctx.letterSpacing = '-2px'
+          ctx.textBaseline = 'middle'
+
+          // Measure total width with proper spacing
+          const wordW = ctx.measureText(targetWord).width
+          let xOffset = cx - wordW / 2
+
+          targetWord.split('').forEach((letter, i) => {
+            const state = letterStates[i]
+            const intensity = state.litSegments / state.segments
+            // Once fully lit, no flicker - consistent brightness
+            const flicker = (state.fullyLit || !state.flickering) ? 1.0 : 0.6
+            const alpha = intensity * flicker
+
+            if (alpha > 0) {
+              // Neon tube effect - multiple glows with stronger core for fully lit letters
+              const baseAlpha = state.fullyLit ? 0.35 : 0.3
+              for (let g = 3; g >= 0; g--) {
+                ctx.save()
+                ctx.globalAlpha = alpha * (baseAlpha - g * 0.07)
+                ctx.shadowColor = '#4fffb0'
+                ctx.shadowBlur = 40 + g * 20
+                ctx.fillStyle = g === 0 ? '#ffffff' : '#4fffb0'
+                ctx.fillText(letter, xOffset, cy)
+                ctx.restore()
+              }
+            }
+            xOffset += ctx.measureText(letter).width
+          })
+          ctx.restore()
+
+          // "THE" and tagline
+          if (progress > 0.8) {
+            const tp = Math.min(1, (progress - 0.8) / 0.2)
+            ctx.save()
+            ctx.globalAlpha = tp * 0.5
+            ctx.font = `400 ${wordH * 0.18}px Syne, sans-serif`
+            ctx.textAlign = 'center'
+            ctx.letterSpacing = '0.3em'
+            ctx.fillStyle = '#fff'
+            ctx.fillText('THE', cx, cy - wordH * 0.72)
+            ctx.font = `400 ${wordH * 0.09}px DM Mono, monospace`
+            ctx.letterSpacing = '0.3em'
+            ctx.fillText('ENGINEERING INTELLIGENCE PLATFORM', cx, cy + wordH * 0.72)
+            ctx.restore()
+          }
+
+          if (progress < 1) {
+            animHandle = requestAnimationFrame(frame)
+          }
+        }
+
+        runProgress(3500)
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== VARIANT 6: HOLOGRAM =====================
+      function startHologram() {
+        const canvas = setupCanvas()
+        canvas.style.display = 'block'
+        document.getElementById('word-stage').style.display = 'none'
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width, h = canvas.height
+
+        const targetWord = 'METRIX'
+        const wordH = Math.min(120, Math.max(64, w * 0.1))
+        const cx = w / 2
+        const cy = h / 2
+
+        let progress = 0
+        let startTime = null
+        let scanlineY = 0
+        let wobble = 0
+
+        function frame(now) {
+          if (!startTime) startTime = now
+          progress = Math.min(1, (now - startTime) / 3000)
+          wobble += 0.05
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+          ctx.fillRect(0, 0, w, h)
+
+          // Hologram scanline sweep
+          scanlineY = cy - wordH + (progress * wordH * 2)
+
+          // 3D layered hologram effect - multiple depth layers
+          ctx.save()
+          ctx.font = `900 ${wordH}px Syne, sans-serif`
+          ctx.letterSpacing = '-2px'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+
+          // Chromatic aberration that changes with time
+          const aberration = (1 - progress) * 5 + Math.sin(wobble) * 2
+
+          // Back depth layers - create 3D effect
+          for (let d = 5; d > 0; d--) {
+            const depthScale = 1 + (d * 0.015)
+            const depthAlpha = (0.15 * progress) / d
+            const depthOffset = d * 3
+
+            ctx.save()
+            ctx.translate(cx, cy + depthOffset)
+            ctx.scale(depthScale, depthScale)
+            ctx.translate(-cx, -cy)
+            ctx.globalAlpha = depthAlpha
+            ctx.fillStyle = '#4fffb0'
+            ctx.fillText(targetWord, cx, cy)
+            ctx.restore()
+          }
+
+          // Red channel (front left)
+          ctx.save()
+          ctx.globalAlpha = 0.4 * progress
+          ctx.fillStyle = '#ff0000'
+          ctx.fillText(targetWord, cx - aberration, cy - 2)
+          ctx.restore()
+
+          // Blue channel (front right)
+          ctx.save()
+          ctx.globalAlpha = 0.4 * progress
+          ctx.fillStyle = '#0000ff'
+          ctx.fillText(targetWord, cx + aberration, cy + 2)
+          ctx.restore()
+
+          // Main cyan channel with perspective distortion
+          ctx.save()
+          const distortion = Math.sin(wobble * 0.5) * 2
+          ctx.globalAlpha = progress * 0.95
+          ctx.fillStyle = '#00ffff'
+          ctx.shadowColor = '#00ffff'
+          ctx.shadowBlur = 30
+          ctx.fillText(targetWord, cx, cy + distortion)
+          ctx.restore()
+
+          // White core for brightness
+          ctx.save()
+          ctx.globalAlpha = progress * 0.6
+          ctx.fillStyle = '#ffffff'
+          ctx.shadowColor = '#ffffff'
+          ctx.shadowBlur = 15
+          ctx.fillText(targetWord, cx, cy + distortion)
+          ctx.restore()
+
+          // Horizontal scanlines
+          ctx.save()
+          ctx.strokeStyle = '#00ffff'
+          ctx.globalAlpha = 0.2 * progress
+          ctx.lineWidth = 1
+          for (let y = 0; y < h; y += 4) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(w, y)
+            ctx.stroke()
+          }
+          ctx.restore()
+
+          // Active scanline sweep with glow
+          ctx.save()
+          ctx.strokeStyle = '#4fffb0'
+          ctx.shadowColor = '#4fffb0'
+          ctx.shadowBlur = 30
+          ctx.lineWidth = 4
+          ctx.globalAlpha = 0.9
+          ctx.beginPath()
+          ctx.moveTo(0, scanlineY)
+          ctx.lineTo(w, scanlineY)
+          ctx.stroke()
+
+          // Secondary scanline glow
+          ctx.shadowBlur = 60
+          ctx.globalAlpha = 0.3
+          ctx.stroke()
+          ctx.restore()
+
+          // Glitch effect - random horizontal displacement
+          if (progress < 0.8 && Math.random() > 0.95) {
+            const glitchY = Math.random() * h
+            const glitchH = 20 + Math.random() * 50
+            const imageData = ctx.getImageData(0, glitchY, w, glitchH)
+            ctx.putImageData(imageData, (Math.random() - 0.5) * 20, glitchY)
+          }
+
+          // "THE" and tagline
+          if (progress > 0.8) {
+            const tp = Math.min(1, (progress - 0.8) / 0.2)
+            ctx.save()
+            ctx.globalAlpha = tp * 0.5
+            ctx.font = `400 ${wordH * 0.18}px Syne, sans-serif`
+            ctx.textAlign = 'center'
+            ctx.letterSpacing = '0.3em'
+            ctx.fillStyle = '#00ffff'
+            ctx.fillText('THE', cx, cy - wordH * 0.72)
+            ctx.font = `400 ${wordH * 0.09}px DM Mono, monospace`
+            ctx.letterSpacing = '0.3em'
+            ctx.fillText('ENGINEERING INTELLIGENCE PLATFORM', cx, cy + wordH * 0.72)
+            ctx.restore()
+          }
+
+          if (progress < 1) {
+            animHandle = requestAnimationFrame(frame)
+          }
+        }
+
+        runProgress(3000)
+        animHandle = requestAnimationFrame(frame)
+      }
+
+      // ===================== FULLSCREEN =====================
+      function fullscreen() {
+        const wrap = document.getElementById('stage-wrap')
+        if (wrap.requestFullscreen) wrap.requestFullscreen()
+        else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen()
+        setTimeout(replay, 300)
+      }
+
+      // ===================== RESIZE =====================
+      let resizeTimer
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer)
+        resizeTimer = setTimeout(replay, 200)
+      })
+
+      // ===================== INIT =====================
+      window.addEventListener('load', () => {
+        // Brief delay so fonts load
+        setTimeout(replay, 200)
+      })
+    </script>
+  </body>
+</html>

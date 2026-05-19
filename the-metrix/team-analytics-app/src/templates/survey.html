@@ -1,0 +1,1004 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Survey · THE METRIX{% endblock %}
+{% block nav_survey %}active{% endblock %}
+
+{% block extra_style %}
+/* Survey-specific styles extracted from original */
+.header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+.header-meta { font-size: 11px; color: var(--muted); }
+.header-meta strong { color: var(--accent4); }
+
+.tabs { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px; margin-bottom: 28px; width: fit-content; }
+.tab { padding: 8px 20px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; color: var(--muted); border: 1px solid transparent; background: none; transition: all 0.2s; letter-spacing: 0.03em; }
+.tab.active { background: var(--surface2); color: var(--accent); border-color: var(--border); }
+.tab:hover:not(.active) { color: var(--text); }
+
+.panel { display: none; min-height: 600px; }
+.panel.active { display: block; }
+
+.form-wrap { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .form-wrap { grid-template-columns: 1fr; } }
+
+.survey-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 32px; }
+.survey-card h2 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.survey-desc { font-size: 11px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+.q-block { margin-bottom: 28px; }
+.q-label { font-size: 12px; font-weight: 500; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+.q-num { font-size: 10px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 7px; border-radius: 4px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+
+.scale-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.scale-btn { width: 44px; height: 44px; border: 1px solid var(--border); background: var(--surface2); border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.scale-btn:hover { border-color: var(--accent); color: var(--accent); }
+.scale-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 12px rgba(79,255,176,0.3); }
+.scale-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 5px; letter-spacing: 0.05em; }
+
+.slider-wrap { display: flex; align-items: center; gap: 14px; }
+input[type=range] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--surface2); border-radius: 2px; outline: none; accent-color: var(--accent); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px rgba(79,255,176,0.4); cursor: pointer; }
+.slider-val { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; color: var(--accent); min-width: 42px; text-align: right; font-feature-settings: 'tnum' 1; }
+
+.survey-card textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; resize: vertical; min-height: 72px; outline: none; transition: border-color 0.2s; line-height: 1.6; }
+.survey-card textarea:focus { border-color: var(--accent); }
+.survey-card textarea::placeholder { color: var(--muted); }
+
+.survey-card select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; width: 100%; transition: border-color 0.2s; cursor: pointer; }
+.survey-card select:focus { border-color: var(--accent); }
+.survey-card select option { background: var(--surface2); }
+
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.15s; font-size: 11px; }
+.check-item:hover { border-color: var(--accent2); }
+.check-item.checked { background: rgba(124,109,250,0.1); border-color: var(--accent2); color: var(--accent2); }
+.check-item input { display: none; }
+
+.meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.field input, .field select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; }
+.field input:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--muted); }
+
+.sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.sidebar-card h3 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 12px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--muted); }
+.stat-val { font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--accent); font-feature-settings: 'tnum' 1; }
+
+.trend-bar-wrap { margin-bottom: 16px; }
+.trend-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+.trend-bar-track { background: var(--surface2); border-radius: 3px; height: 6px; overflow: hidden; }
+.trend-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.6s; }
+.trend-bar-fill.amber { background: var(--accent4); }
+.trend-bar-fill.red { background: var(--accent3); }
+.trend-bar-fill.orange { background: #ff9f43; }
+.trend-bar-fill.yellow { background: var(--accent4); }
+
+.toast { position: fixed; top: 24px; right: 24px; background: var(--accent); color: #000; padding: 12px 20px; border-radius: 8px; font-size: 12px; font-weight: 500; transform: translateY(-80px); opacity: 0; transition: all 0.3s; z-index: 200; box-shadow: 0 8px 30px rgba(79,255,176,0.4); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th { padding: 10px 14px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); background: var(--surface2); border-bottom: 1px solid var(--border); }
+tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(42,42,58,0.5); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+.score-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.score-hi { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.3); }
+.score-mid { background: rgba(255,217,61,0.12); color: var(--accent4); border: 1px solid rgba(255,217,61,0.3); }
+.score-lo { background: rgba(255,107,107,0.12); color: var(--accent3); border: 1px solid rgba(255,107,107,0.3); }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+.count-badge { font-size: 10px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; color: var(--muted); font-family: 'DM Mono'; }
+
+.empty-state { padding: 40px; text-align: center; color: var(--muted); }
+.empty-state .icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+canvas.trend-canvas { width: 100%; height: 160px; display: block; margin-top: 8px; }
+
+/* Skeleton loading animation */
+.skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-stat { height: 40px; margin-bottom: 12px; }
+.skeleton-chart { height: 160px; }
+.skeleton-bar { height: 50px; margin-bottom: 12px; }
+
+.help-box { background: rgba(79,255,176,0.04); border: 1px solid rgba(79,255,176,0.15); border-radius: 8px; padding: 12px 16px; font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.help-box strong { color: var(--accent); }
+.help-box code { font-family: 'DM Mono'; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--accent4); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+{% endblock %}
+
+{% block content %}
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">DEV<span>//</span>PULSE</div>
+      <div class="demo-badge">DEMO MODE</div>
+      <div class="header-meta">Bi-weekly team survey · <strong id="response-count">0</strong> responses saved</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button type="button" class="tab active" onclick="showTab('form')">Submit Response</button>
+    <button type="button" class="tab" onclick="showTab('trends')">Trends</button>
+    <button type="button" class="tab" onclick="showTab('history')">History</button>
+    <button type="button" class="tab" onclick="showTab('export')">Export / Import</button>
+  </div>
+
+  <!-- FORM PANEL -->
+  <div class="panel active" id="panel-form">
+    <div class="form-wrap">
+
+      <div class="survey-card">
+        <h2>Sprint Pulse Check</h2>
+        <p class="survey-desc">~2 minutes · bi-weekly · anonymous unless you add your name. Responses are saved locally in your browser and to <code>responses.json</code> if you're running the local server.</p>
+
+        <div class="meta-row">
+          <div class="field">
+            <label>Name (optional)</label>
+            <input type="text" id="f-name" placeholder="Anonymous" />
+          </div>
+          <div class="field">
+            <label>Sprint / Date</label>
+            <!-- TODO: Kanban mode - change to date picker, group by week/month in trends -->
+            <input type="text" id="f-sprint" placeholder="e.g. Sprint 24" />
+          </div>
+        </div>
+
+        <!-- Q1: Flow -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">01</span> How often were you in a state of deep focus / flow this sprint?</div>
+          <div class="scale-row" id="scale-flow">
+            <button class="scale-btn" onclick="selectScale('flow',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('flow',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('flow',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('flow',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('flow',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Rarely</span><span>Always</span></div>
+        </div>
+
+        <!-- Q2: AI Satisfaction -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">02</span> How satisfied are you with your AI coding tools this sprint?</div>
+          <div class="scale-row" id="scale-ai-sat">
+            <button class="scale-btn" onclick="selectScale('ai-sat',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('ai-sat',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('ai-sat',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('ai-sat',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('ai-sat',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Very poor</span><span>Excellent</span></div>
+        </div>
+
+        <!-- Q3: AI helped ship faster -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">03</span> Did AI tools help you ship faster this sprint?</div>
+          <div class="scale-row" id="scale-ai-speed">
+            <button class="scale-btn" onclick="selectScale('ai-speed',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('ai-speed',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('ai-speed',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('ai-speed',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('ai-speed',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Not at all</span><span>Significantly</span></div>
+        </div>
+
+        <!-- Q4: AI code % -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">04</span> Roughly what % of your merged code was AI-assisted?</div>
+          <div class="slider-wrap">
+            <input type="range" min="0" max="100" step="5" value="20" id="slider-ai-pct" oninput="document.getElementById('ai-pct-val').textContent=this.value+'%'" />
+            <div class="slider-val" id="ai-pct-val">20%</div>
+          </div>
+        </div>
+
+        <!-- Q5: Biggest blocker -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">05</span> What slowed you down most this sprint? (pick all that apply)</div>
+          <div class="check-grid" id="blockers">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="meetings">📅 Too many meetings</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="unclear-reqs">❓ Unclear requirements</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="tech-debt">🏗 Tech debt / legacy code</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="review-wait">⏳ Waiting on PR reviews</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="env-issues">💻 Dev environment issues</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="slow-ci">🐢 Slow CI/CD</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="context-switch">🔀 Context switching</div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="ai-hallucinations">🤖 AI gave bad output</div>
+          </div>
+        </div>
+
+        <!-- Q6: Overall satisfaction -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">06</span> Overall developer experience satisfaction this sprint?</div>
+          <div class="scale-row" id="scale-devex">
+            <button class="scale-btn" onclick="selectScale('devex',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('devex',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('devex',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('devex',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('devex',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Miserable</span><span>Loved it</span></div>
+        </div>
+
+        <!-- Q7: Open text -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">07</span> One thing that would most improve your productivity next sprint?</div>
+          <textarea id="f-improve" placeholder="e.g. faster CI, less meetings, better AI context..."></textarea>
+        </div>
+
+        <!-- Q8: AI tool used -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">08</span> Primary AI coding tool this sprint?</div>
+          <select id="f-ai-tool">
+            <option value="">— Select —</option>
+            <option>OpenCode</option>
+            <option>Claude Code</option>
+            <option>GitHub Copilot</option>
+            <option>Cursor</option>
+            <option>Windsurf</option>
+            <option>Codeium</option>
+            <option>ChatGPT</option>
+            <option>Multiple</option>
+            <option>None</option>
+          </select>
+        </div>
+
+        <hr class="divider" />
+        <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent2);margin-bottom:20px;display:flex;align-items:center;gap:10px">
+          <span>SPACE Framework</span>
+          <span style="flex:1;border-top:1px solid var(--border)"></span>
+        </div>
+
+        <!-- SPACE-P: Performance - code quality confidence -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num" style="background:rgba(124,109,250,.15);color:var(--accent2);border-color:rgba(124,109,250,.3)">P</span> How confident are you in the quality of code you shipped this sprint?</div>
+          <div class="scale-row" id="scale-perf">
+            <button class="scale-btn" onclick="selectScale('perf',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('perf',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('perf',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('perf',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('perf',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Low confidence</span><span>Very confident</span></div>
+        </div>
+
+        <!-- SPACE-C: Communication & collaboration -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num" style="background:rgba(124,109,250,.15);color:var(--accent2);border-color:rgba(124,109,250,.3)">C</span> How smoothly did code review and team collaboration go this sprint?</div>
+          <div class="scale-row" id="scale-collab">
+            <button class="scale-btn" onclick="selectScale('collab',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('collab',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('collab',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('collab',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('collab',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Very painful</span><span>Frictionless</span></div>
+        </div>
+
+        <!-- SPACE-A: Activity - output confidence -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num" style="background:rgba(124,109,250,.15);color:var(--accent2);border-color:rgba(124,109,250,.3)">A</span> How much did you actually complete vs. what you planned this sprint?</div>
+          <div class="scale-row" id="scale-activity">
+            <button class="scale-btn" onclick="selectScale('activity',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('activity',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('activity',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('activity',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('activity',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>&lt;25% of plan</span><span>100%+ of plan</span></div>
+        </div>
+
+        <!-- SPACE-E: Efficiency - interruptions -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num" style="background:rgba(124,109,250,.15);color:var(--accent2);border-color:rgba(124,109,250,.3)">E</span> How often were you interrupted or context-switched out of deep work?</div>
+          <div class="scale-row" id="scale-efficiency">
+            <button class="scale-btn" onclick="selectScale('efficiency',1)">1</button>
+            <button class="scale-btn" onclick="selectScale('efficiency',2)">2</button>
+            <button class="scale-btn" onclick="selectScale('efficiency',3)">3</button>
+            <button class="scale-btn" onclick="selectScale('efficiency',4)">4</button>
+            <button class="scale-btn" onclick="selectScale('efficiency',5)">5</button>
+          </div>
+          <div class="scale-labels"><span>Constantly interrupted</span><span>Never interrupted</span></div>
+        </div>
+
+        <hr class="divider" />
+        <button class="btn btn-primary" onclick="submitSurvey()">Submit Response →</button>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div>
+        <div class="sidebar-card">
+          <h3>Team Averages</h3>
+          <div id="sidebar-stats">
+            <div class="empty-state" style="padding:20px 0"><div class="icon">📊</div><p style="font-size:11px">No responses yet</p></div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Top Blockers</h3>
+          <div id="sidebar-blockers">
+            <div class="empty-state" style="padding:20px 0"><div class="icon">🚧</div><p style="font-size:11px">Submit responses to see blockers</p></div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>AI Tool Adoption</h3>
+          <div id="sidebar-tools">
+            <div class="empty-state" style="padding:20px 0"><div class="icon">🤖</div><p style="font-size:11px">No data yet</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDS PANEL -->
+  <div class="panel" id="panel-trends" data-feedback-component="survey-trends" data-feedback-label="Survey Trends">
+    <!-- Loading skeletons -->
+    <div id="trends-skeleton" style="display:none;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="sidebar-card"><div class="skeleton skeleton-chart"></div></div>
+      <div class="sidebar-card"><div class="skeleton skeleton-chart"></div></div>
+      <div class="sidebar-card"><div class="skeleton skeleton-chart"></div></div>
+      <div class="sidebar-card"><div class="skeleton skeleton-chart"></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="trends-grid">
+      <div class="sidebar-card">
+        <h3>Flow Score Over Time</h3>
+        <canvas class="trend-canvas" id="chart-flow"></canvas>
+      </div>
+      <div class="sidebar-card">
+        <h3>AI Satisfaction Over Time</h3>
+        <canvas class="trend-canvas" id="chart-ai-sat"></canvas>
+      </div>
+      <div class="sidebar-card">
+        <h3>AI % of Code Over Time</h3>
+        <canvas class="trend-canvas" id="chart-ai-pct"></canvas>
+      </div>
+      <div class="sidebar-card">
+        <h3>Developer Experience Over Time</h3>
+        <canvas class="trend-canvas" id="chart-devex"></canvas>
+      </div>
+    </div>
+    <div id="trends-empty" class="empty-state" style="display:none">
+      <div class="icon">📈</div>
+      <p id="trends-empty-message">Submit responses from at least 2 different time periods to see trends</p>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div class="section-header">
+      <div class="section-title">All Responses <span class="count-badge" id="hist-count">0</span></div>
+      <button class="btn btn-secondary btn-sm" onclick="clearAll()">✕ Clear All</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sprint</th><th>Name</th><th>Flow</th><th>AI Sat</th><th>AI Speed</th><th>AI %</th><th>DevEx</th><th>Tool</th><th>Top Blocker</th><th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="history-table">
+          <tr><td colspan="10"><div class="empty-state"><div class="icon">📭</div><p>No responses yet</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXPORT / IMPORT PANEL -->
+  <div class="panel" id="panel-export">
+    <div class="help-box">
+      <strong>Sharing responses with your team:</strong> Export responses as JSON, commit to your repo, or host with the included server script. Team members can import the shared JSON to merge responses into their local view.
+      <br><br>
+      <strong>Running the local server:</strong> <code>python3 server.py</code> — then open <code>http://localhost:8765</code>. The server auto-saves form submissions to <code>responses.json</code> and serves the HTML files.
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="sidebar-card">
+        <h3>Export JSON</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Download all responses as a JSON file you can commit or share with the team.</p>
+        <button class="btn btn-secondary" onclick="exportJSON()" style="width:100%;margin-bottom:10px">⬇ Download responses.json</button>
+        <button class="btn btn-secondary" onclick="copyJSON()" style="width:100%">📋 Copy to Clipboard</button>
+      </div>
+      <div class="sidebar-card">
+        <h3>Import JSON</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Merge a team responses.json into your local data. Duplicates are skipped by ID.</p>
+        <textarea id="import-box" placeholder='Paste responses.json content here...' style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--text);font-family:DM Mono,monospace;font-size:11px;height:100px;outline:none;resize:vertical;margin-bottom:10px"></textarea>
+        <button class="btn btn-primary" onclick="importJSON()" style="width:100%">⬆ Import & Merge</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ==================== STATE ====================
+const API_BASE = "/api";  // FastAPI proxy (same origin)
+let responses = [];
+
+// Load from localStorage on init
+try {
+  const stored = localStorage.getItem('metrix_survey_responses');
+  if (stored) responses = JSON.parse(stored);
+} catch(e) {
+  console.error('Failed to load survey responses from localStorage:', e);
+}
+
+function generateDemoData() {
+  const demoResponses = [];
+  const sprints = ['Sprint 10', 'Sprint 11', 'Sprint 12', 'Sprint 13', 'Sprint 14', 'Sprint 15'];
+  const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace'];
+  const blockerOptions = ['Tech Debt', 'Dependencies', 'Unclear Requirements', 'Testing Issues'];
+
+  sprints.forEach((sprint, idx) => {
+    // 3-4 responses per sprint
+    const count = 3 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      demoResponses.push({
+        id: `demo-${idx}-${i}`,
+        name: Math.random() > 0.5 ? names[Math.floor(Math.random() * names.length)] : '',
+        sprint: sprint,
+        flow: Math.floor(2 + Math.random() * 4), // 2-5 (whole numbers)
+        devex: Math.floor(2 + Math.random() * 4), // 2-5 (whole numbers)
+        aiSatisfaction: Math.floor(3 + Math.random() * 3), // 3-5 (whole numbers)
+        aiSpeed: Math.floor(3 + Math.random() * 3), // 3-5 (whole numbers)
+        aiCodePct: Math.floor(20 + Math.random() * 61), // 20-80% (whole numbers)
+        blockers: Math.random() > 0.5 ? [blockerOptions[Math.floor(Math.random() * blockerOptions.length)]] : [],
+        comments: Math.random() > 0.7 ? 'Demo feedback comment' : '',
+        submittedAt: new Date(Date.now() - (sprints.length - idx) * 14 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+  });
+  return demoResponses;
+}
+
+function load() {
+  // Show skeleton loading
+  const skeleton = document.getElementById('trends-skeleton');
+  if (skeleton) skeleton.style.display = 'grid';
+
+  // Check for demo mode
+  if (window.DEMO_MODE) {
+    responses = generateDemoData();
+    if (skeleton) skeleton.style.display = 'none';
+    render();
+    return;
+  }
+
+  // Load responses from API
+  fetch(`${API_BASE}/survey/responses?limit=1000`)
+    .then(res => res.json())
+    .then(data => {
+      // Normalize snake_case API fields to camelCase for JS
+      responses = (data.responses || []).map(r => ({
+        id: r.id,
+        submittedAt: r.submitted_at,
+        name: r.name,
+        sprint: r.sprint,
+        flow: r.flow,
+        aiSatisfaction: r.ai_satisfaction,
+        aiSpeed: r.ai_speed,
+        aiCodePct: r.ai_code_pct,
+        devex: r.devex,
+        blockers: r.blockers || [],
+        improvement: r.improvement,
+        aiTool: r.ai_tool,
+        spacePerformance: r.space_performance,
+        spaceCollaboration: r.space_collaboration,
+        spaceActivity: r.space_activity,
+        spaceEfficiency: r.space_efficiency,
+      }));
+      if (skeleton) skeleton.style.display = 'none';
+      render();
+    })
+    .catch(err => {
+      console.error('Failed to load responses:', err);
+      responses = [];
+      if (skeleton) skeleton.style.display = 'none';
+      render();
+    });
+}
+
+function save() {
+  // Save responses array (for compatibility with original code)
+  // Individual responses are submitted via submitSurvey()
+}
+
+// ==================== FORM ====================
+const scales = {};
+
+function selectScale(id, val) {
+  scales[id] = val;
+  document.querySelectorAll(`#scale-${id} .scale-btn`).forEach((btn, i) => {
+    btn.classList.toggle('selected', i + 1 === val);
+  });
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+function getChecked() {
+  return Array.from(document.querySelectorAll('#blockers .check-item.checked'))
+    .map(el => el.querySelector('input').value);
+}
+
+function submitSurvey() {
+  if (!scales['flow'] || !scales['ai-sat'] || !scales['ai-speed'] || !scales['devex']) {
+    showToast('Please answer all scale questions (01–03, 06)', 'error');
+    return;
+  }
+
+  const response = {
+    id: Date.now().toString(),
+    submittedAt: new Date().toISOString(),
+    name: document.getElementById('f-name').value.trim() || 'Anonymous',
+    sprint: document.getElementById('f-sprint').value.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    flow: scales['flow'],
+    aiSatisfaction: scales['ai-sat'],
+    aiSpeed: scales['ai-speed'],
+    aiCodePct: parseInt(document.getElementById('slider-ai-pct').value),
+    devex: scales['devex'],
+    blockers: getChecked(),
+    improvement: document.getElementById('f-improve').value.trim(),
+    aiTool: document.getElementById('f-ai-tool').value,
+    // SPACE dimensions
+    spacePerformance: scales['perf'] || null,
+    spaceCollaboration: scales['collab'] || null,
+    spaceActivity: scales['activity'] || null,
+    spaceEfficiency: scales['efficiency'] || null,
+  };
+
+  // Save locally first
+  responses.push(response);
+  localStorage.setItem('metrix_survey_responses', JSON.stringify(responses));
+
+  // Try to submit to API (optional)
+  fetch(`${API_BASE}/survey/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: response.id,
+      submitted_at: response.submittedAt,
+      name: response.name,
+      sprint: response.sprint,
+      flow: response.flow,
+      ai_satisfaction: response.aiSatisfaction,
+      ai_speed: response.aiSpeed,
+      ai_code_pct: response.aiCodePct,
+      devex: response.devex,
+      blockers: response.blockers,
+      improvement: response.improvement,
+      ai_tool: response.aiTool,
+      space_performance: response.spacePerformance,
+      space_collaboration: response.spaceCollaboration,
+      space_activity: response.spaceActivity,
+      space_efficiency: response.spaceEfficiency,
+    }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('Survey submitted to API:', data);
+  })
+  .catch(err => {
+    console.log('API unavailable, using localStorage only:', err);
+  });
+
+  // Show success and update UI
+  showToast('✓ Response saved!');
+  resetForm();
+  render();
+}
+
+function resetForm() {
+  ['flow','ai-sat','ai-speed','devex','perf','collab','activity','efficiency'].forEach(id => {
+    scales[id] = null;
+    document.querySelectorAll(`#scale-${id} .scale-btn`).forEach(b => b.classList.remove('selected'));
+  });
+  document.querySelectorAll('#blockers .check-item').forEach(el => el.classList.remove('checked'));
+  document.getElementById('slider-ai-pct').value = 20;
+  document.getElementById('ai-pct-val').textContent = '20%';
+  document.getElementById('f-improve').value = '';
+  document.getElementById('f-ai-tool').value = '';
+  document.getElementById('f-name').value = '';
+}
+
+// ==================== RENDER ====================
+function avg(arr) {
+  const filtered = arr.filter(v => v != null && !isNaN(v));
+  return filtered.length ? (filtered.reduce((a,b) => a+b,0)/filtered.length) : 0;
+}
+function fmtAvg(n) { return (isNaN(n) ? 0 : n).toFixed(1); }
+
+function render() {
+  document.getElementById('response-count').textContent = responses.length;
+  document.getElementById('hist-count').textContent = responses.length;
+  renderSidebar();
+  renderHistory();
+  renderTrends();
+}
+
+function renderSidebar() {
+  const statsEl = document.getElementById('sidebar-stats');
+
+  if (!responses.length) {
+    statsEl.innerHTML = '<div class="empty-state" style="padding:16px 0"><p style="font-size:11px">No responses yet</p></div>';
+    document.getElementById('sidebar-blockers').innerHTML = '<div class="empty-state" style="padding:10px 0"><p style="font-size:11px">No blockers selected</p></div>';
+    document.getElementById('sidebar-tools').innerHTML = '<div class="empty-state" style="padding:10px 0"><p style="font-size:11px">No tool data</p></div>';
+    return;
+  }
+  const metrics = [
+    { label: 'Avg Flow Score', val: fmtAvg(avg(responses.map(r=>r.flow))), suffix: '/5' },
+    { label: 'Avg AI Satisfaction', val: fmtAvg(avg(responses.map(r=>r.aiSatisfaction))), suffix: '/5' },
+    { label: 'Avg AI Speed Impact', val: fmtAvg(avg(responses.map(r=>r.aiSpeed))), suffix: '/5' },
+    { label: 'Avg AI Code %', val: Math.round(avg(responses.map(r=>r.aiCodePct))), suffix: '%' },
+    { label: 'Avg DevEx Score', val: fmtAvg(avg(responses.map(r=>r.devex))), suffix: '/5' },
+    { label: 'Total Responses', val: responses.length, suffix: '' },
+  ];
+  statsEl.innerHTML = metrics.map(m => `
+    <div class="stat-row">
+      <span class="stat-label">${m.label}</span>
+      <span class="stat-val">${m.val}${m.suffix}</span>
+    </div>`).join('');
+
+  // Blockers
+  const blockerMap = {};
+  responses.forEach(r => (r.blockers || []).forEach(b => { blockerMap[b] = (blockerMap[b]||0)+1; }));
+  const sorted = Object.entries(blockerMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxB = sorted[0]?.[1] || 1;
+  const labels = {
+    'meetings':'Too many meetings','unclear-reqs':'Unclear requirements',
+    'tech-debt':'Tech debt','review-wait':'PR review wait',
+    'env-issues':'Env issues','slow-ci':'Slow CI/CD',
+    'context-switch':'Context switching','ai-hallucinations':'AI bad output'
+  };
+  document.getElementById('sidebar-blockers').innerHTML = sorted.length ? sorted.map(([k,v],i) => {
+    // Gradient from red -> orange -> yellow for top 5 blockers
+    const colors = ['red', 'orange', 'amber', 'yellow', 'yellow'];
+    const color = colors[i] || 'yellow';
+    return `
+    <div class="trend-bar-wrap">
+      <div class="trend-bar-label"><span>${labels[k]||k}</span><span>${v}×</span></div>
+      <div class="trend-bar-track"><div class="trend-bar-fill ${color}" style="width:${(v/maxB*100).toFixed(0)}%"></div></div>
+    </div>`;
+  }).join('') : '<div class="empty-state" style="padding:10px 0"><p style="font-size:11px">No blockers selected</p></div>';
+
+  // Tools
+  const toolMap = {};
+  responses.forEach(r => { if(r.aiTool) toolMap[r.aiTool]=(toolMap[r.aiTool]||0)+1; });
+  const sortedTools = Object.entries(toolMap).sort((a,b)=>b[1]-a[1]);
+  const maxT = sortedTools[0]?.[1] || 1;
+  document.getElementById('sidebar-tools').innerHTML = sortedTools.length ? sortedTools.map(([k,v]) => `
+    <div class="trend-bar-wrap">
+      <div class="trend-bar-label"><span>${k}</span><span>${v} devs</span></div>
+      <div class="trend-bar-track"><div class="trend-bar-fill" style="width:${(v/maxT*100).toFixed(0)}%"></div></div>
+    </div>`).join('') : '<div class="empty-state" style="padding:10px 0"><p style="font-size:11px">No tool data</p></div>';
+}
+
+function renderHistory() {
+  const tbody = document.getElementById('history-table');
+  if (!responses.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">📭</div><p>No responses yet — submit the form!</p></div></td></tr>`;
+    return;
+  }
+  const sorted = [...responses].sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt));
+  tbody.innerHTML = sorted.map(r => {
+    const devex = r.devex || 0;
+    const cls = devex >= 4 ? 'score-hi' : devex >= 3 ? 'score-mid' : 'score-lo';
+    return `<tr>
+      <td>${r.sprint}</td>
+      <td>${r.name}</td>
+      <td>${r.flow}/5</td>
+      <td>${r.aiSatisfaction}/5</td>
+      <td>${r.aiSpeed}/5</td>
+      <td>${r.aiCodePct}%</td>
+      <td><span class="score-pill ${cls}">${r.devex}/5</span></td>
+      <td>${r.aiTool||'—'}</td>
+      <td style="font-size:10px;color:var(--muted)">${(r.blockers||[]).slice(0,2).join(', ')||'—'}</td>
+      <td style="color:var(--muted);font-size:10px">${new Date(r.submittedAt).toLocaleDateString()}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTrends() {
+  const skeleton = document.getElementById('trends-skeleton');
+  const trendsGrid = document.querySelector('.trends-grid');
+  const trendsEmpty = document.getElementById('trends-empty');
+  
+  // TODO: Add workflow_type setting for Kanban support
+  // When workflow_type === 'kanban', group by week/month instead of sprint
+  // For now, assume Agile mode and group by sprint
+  const workflowType = 'agile'; // Future: load from team settings
+
+  // Group by time period and average the values
+  const timeData = {};
+  responses.forEach(r => {
+    // Time-based grouping key (sprint for Agile, week for Kanban)
+    const timeKey = workflowType === 'agile' ? r.sprint : getWeekLabel(r.submittedAt);
+
+    if (!timeData[timeKey]) {
+      timeData[timeKey] = { flow: [], aiSat: [], aiPct: [], devex: [] };
+    }
+    timeData[timeKey].flow.push(r.flow);
+    timeData[timeKey].aiSat.push(r.aiSatisfaction);
+    timeData[timeKey].aiPct.push(r.aiCodePct);
+    timeData[timeKey].devex.push(r.devex);
+  });
+
+  // Sort time periods and calculate averages
+  const periods = Object.keys(timeData).sort();
+  
+  // Check if we have enough distinct time periods for trends
+  if (periods.length < 2) {
+    if (skeleton) skeleton.style.display = 'none';
+    if (trendsGrid) trendsGrid.style.display = 'none';
+    trendsEmpty.style.display = 'block';
+    // Update message to explain why
+    const emptyMsg = document.getElementById('trends-empty-message');
+    const periodType = workflowType === 'kanban' ? 'weeks' : 'sprints';
+    const periodTypeSingle = workflowType === 'kanban' ? 'week' : 'sprint';
+    
+    if (emptyMsg) {
+      if (responses.length === 0) {
+        emptyMsg.textContent = `Submit responses from at least 2 different ${periodType} to see trends`;
+      } else if (periods.length === 1) {
+        emptyMsg.textContent = `You have ${responses.length} response(s) but they're all from the same ${periodTypeSingle} (${periods[0]}). Submit responses from a different ${periodTypeSingle} to see trends.`;
+      } else {
+        emptyMsg.textContent = `Submit responses from at least 2 different ${periodType} to see trends`;
+      }
+    }
+    // Clear all charts when insufficient data
+    clearChart('chart-flow');
+    clearChart('chart-ai-sat');
+    clearChart('chart-ai-pct');
+    clearChart('chart-devex');
+    return;
+  }
+  
+  trendsEmpty.style.display = 'none';
+  if (trendsGrid) trendsGrid.style.display = 'grid';
+  const labels = periods;
+  const avgFlow = periods.map(p => timeData[p].flow.reduce((a,b)=>a+b,0) / timeData[p].flow.length);
+  const avgAiSat = periods.map(p => timeData[p].aiSat.reduce((a,b)=>a+b,0) / timeData[p].aiSat.length);
+  const avgAiPct = periods.map(p => timeData[p].aiPct.reduce((a,b)=>a+b,0) / timeData[p].aiPct.length);
+  const avgDevex = periods.map(p => timeData[p].devex.reduce((a,b)=>a+b,0) / timeData[p].devex.length);
+
+  drawLineChart('chart-flow', labels, avgFlow, '#4fffb0', 5);
+  drawLineChart('chart-ai-sat', labels, avgAiSat, '#7c6dfa', 5);
+  drawLineChart('chart-ai-pct', labels, avgAiPct, '#ffd93d', 100);
+  drawLineChart('chart-devex', labels, avgDevex, '#4fffb0', 5);
+  
+  // Hide skeleton after charts are rendered
+  if (skeleton) skeleton.style.display = 'none';
+}
+
+// Helper function for Kanban mode (future use)
+function getWeekLabel(dateStr) {
+  const date = new Date(dateStr);
+  const weekNum = Math.ceil((date - new Date(date.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+  return `W${weekNum}`;
+}
+
+function clearChart(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawLineChart(id, labels, data, color, maxVal) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  
+  // Debug logging
+  if (data.length < 3) {
+    console.log(`Drawing chart ${id} with ${data.length} points:`, data, 'labels:', labels);
+  }
+  
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 400;
+  const H = 160;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  
+  // Handle edge cases
+  if (data.length === 0) return;
+  if (data.every(v => v === 0)) return;
+
+  const padTop = 20;  // More space at top to prevent clipping
+  const padBottom = 35;  // More space at bottom for rotated labels (increased from 25)
+  const padLeft = 40;  // Left padding for first label (increased from 30)
+  const padRight = 40;  // Right padding for last label (increased from 30)
+  
+  // Calculate points - handle single point case
+  const pts = data.map((v,i) => {
+    let xPos;
+    if (data.length === 1) {
+      xPos = W / 2; // Center single point
+    } else {
+      xPos = padLeft + (i/(data.length-1)) * (W-padLeft-padRight);
+    }
+    return {
+      x: xPos,
+      y: padTop + (1 - v/maxVal) * (H-padTop-padBottom),
+    };
+  });
+
+  // Fill area under line
+  if (pts.length > 0) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, H-padBottom);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length-1].x, H-padBottom);
+    ctx.closePath();
+    ctx.fillStyle = color + '18';
+    ctx.fill();
+  }
+
+  // Draw line (only if 2+ points)
+  if (pts.length >= 2) {
+    ctx.beginPath();
+    pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3; // Increased from 2 for better visibility
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+  }
+
+  // Dots + value labels
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  const labelColor = savedTheme === 'light' ? '#1f2937' : 'rgba(232,232,240,0.9)';
+  pts.forEach((p, i) => {
+    // Draw dot with white outline for visibility
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Value label above dot
+    ctx.fillStyle = labelColor;
+    ctx.font = '700 11px DM Mono';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    // Format value: whole numbers or 1 decimal for /5 scores, whole for percentages
+    const displayValue = maxVal === 100 ? Math.round(data[i]) : data[i].toFixed(1);
+    ctx.fillText(displayValue, p.x, p.y - 12);
+  });
+
+  // Sprint labels - rotated to prevent overlap
+  const sprintLabelColor = savedTheme === 'light' ? '#6b7280' : '#6b6b8a';
+  ctx.fillStyle = sprintLabelColor;
+  ctx.font = '600 10px DM Mono'; // Slightly larger font
+  pts.forEach((p, i) => {
+    ctx.save();
+    ctx.translate(p.x, H - 5); // Moved up slightly
+    
+    // If only 1-2 points, don't rotate (more readable)
+    if (data.length <= 2) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(labels[i] || '', 0, 0);
+    } else {
+      // Rotate for 3+ points to save space
+      ctx.rotate(-Math.PI / 4);  // 45 degree rotation
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labels[i] || '', 0, 0);
+    }
+    ctx.restore();
+  });
+}
+
+// ==================== EXPORT/IMPORT ====================
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(responses, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'responses.json';
+  a.click();
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(responses, null, 2));
+  showToast('Copied to clipboard!');
+}
+
+function importJSON() {
+  try {
+    const imported = JSON.parse(document.getElementById('import-box').value);
+    const existingIds = new Set(responses.map(r=>r.id));
+    const newOnes = imported.filter(r => !existingIds.has(r.id));
+    responses = [...responses, ...newOnes];
+    save();
+    render();
+    showToast(`Imported ${newOnes.length} new responses`);
+    document.getElementById('import-box').value = '';
+  } catch(e) {
+    showToast('Invalid JSON', 'error');
+  }
+}
+
+async function clearAll() {
+  if (!confirm(`Delete all ${responses.length} responses? This cannot be undone.`)) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/survey/responses`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    responses = [];
+    save();
+    render();
+    showToast('All responses deleted', 'success');
+  } catch (err) {
+    console.error('Failed to delete responses:', err);
+    showToast('Failed to delete responses', 'error');
+  }
+}
+
+// ==================== UI ====================
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+  
+  if (id === 'trends') {
+    // Show skeleton, hide grid while loading
+    const skeleton = document.getElementById('trends-skeleton');
+    const trendsGrid = document.querySelector('.trends-grid');
+    if (skeleton) skeleton.style.display = 'grid';
+    if (trendsGrid) trendsGrid.style.display = 'none';
+    setTimeout(renderTrends, 50);
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'error' ? 'var(--accent3)' : 'var(--accent)';
+  t.style.color = type === 'error' ? '#fff' : '#000';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Expose reload function for global demo toggle
+window.reloadPageData = load;
+
+// Initialize form with current date
+function initForm() {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const year = String(today.getFullYear()).slice(-2);
+  document.getElementById('f-sprint').value = `${month}/${day}/${year}`;
+}
+
+load();
+initForm();
+</script>
+{% endblock %}

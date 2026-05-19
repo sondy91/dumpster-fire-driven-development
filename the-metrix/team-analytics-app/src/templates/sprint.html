@@ -1,0 +1,415 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ page_title|default('Sprint Analytics') }} · THE METRIX{% endblock %}
+{% block nav_sprint %}active{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block extra_style %}
+header { padding: 28px 0 0; margin-bottom: 32px; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+@media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.chart-card h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.chart-desc { font-size: 10px; color: var(--muted); margin-bottom: 16px; }
+.chart-container { height: 320px; position: relative; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+.metric-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.metric-card.primary::before { background: var(--accent); }
+.metric-card.secondary::before { background: var(--accent2); }
+.metric-card.warning::before { background: var(--accent4); }
+.metric-card.accent::before { background: #ff9f43; }
+
+.metric-content .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.metric-content .metric-value { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); font-feature-settings: 'tnum' 1; }
+.metric-aside { text-align: right; }
+.metric-aside .metric-sub { font-size: 9px; color: var(--muted); }
+.metric-aside .metric-trend { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; }
+.metric-aside .metric-trend.positive { color: var(--accent); }
+.metric-aside .metric-trend.negative { color: var(--accent3); }
+{% endblock %}
+
+{% block content %}
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div>
+        <div class="logo" id="pageTitle">SPRINT<span>//</span>ANALYTICS</div>
+        <div id="teamInfo" style="font-size: 11px; color: var(--muted); margin-top: 4px;"></div>
+      </div>
+      <div class="demo-badge">DEMO MODE</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Kanban mode notice -->
+  <div id="kanbanNotice" style="display: none; margin-bottom: 24px; padding: 20px; background: rgba(255,217,61,0.1); border: 1px solid rgba(255,217,61,0.3); border-radius: 12px; border-left: 4px solid var(--accent4);">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+      <span style="font-size: 20px;">🚧</span>
+      <span style="font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: var(--accent4);">Kanban Analytics Coming Soon</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text); line-height: 1.6;">
+      This project uses Kanban workflow, but the analytics shown below are sprint-based metrics. Full Kanban analytics (throughput, cycle time, cumulative flow) will be available in a future release.
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h2>Sprint Workload Analysis</h2>
+      <p class="chart-desc">Committed vs Completed vs Carryover</p>
+      <div class="chart-container">
+        <canvas id="workloadChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Team Performance & Efficiency</h2>
+      <p class="chart-desc">Contributors vs Efficiency vs Reliability</p>
+      <div class="chart-container">
+        <canvas id="performanceChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric-card primary">
+      <div class="metric-content">
+        <div class="metric-label">Avg Velocity</div>
+        <div class="metric-value">{{ team_metrics.avg_velocity if team_metrics else '0' }}</div>
+      </div>
+      <div class="metric-aside">
+        <div class="metric-sub">Completed Points/Sprint</div>
+      </div>
+    </div>
+
+    <div class="metric-card secondary">
+      <div class="metric-content">
+        <div class="metric-label">Velocity Trend</div>
+        <div class="metric-value">{{ velocity_trend if velocity_trend else '0' }}%</div>
+      </div>
+      <div class="metric-aside">
+        <div class="metric-trend {% if velocity_trend and velocity_trend.startswith('+') %}positive{% else %}negative{% endif %}">Last 5 Sprints</div>
+      </div>
+    </div>
+
+    <div class="metric-card warning">
+      <div class="metric-content">
+        <div class="metric-label">Avg Reliability</div>
+        <div class="metric-value">{{ team_metrics.avg_reliability if team_metrics else '0' }}%</div>
+      </div>
+      <div class="metric-aside">
+        <div class="metric-sub">Completed vs Committed %</div>
+      </div>
+    </div>
+
+    <div class="metric-card accent">
+      <div class="metric-content">
+        <div class="metric-label">Focus Factor</div>
+        <div class="metric-value">{{ focus_factor if focus_factor else '0' }}</div>
+      </div>
+      <div class="metric-aside">
+        <div class="metric-sub">Points per Capacity Day</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+console.log('Sprint script starting...');
+console.log('Chart.js available?', typeof Chart);
+
+// Chart data from backend
+const chartData = {{ chart_data | tojson | safe }};
+console.log('Chart data:', chartData);
+
+// Chart.js theme config - check for light mode (use existing savedTheme from base_layout)
+const currentTheme = localStorage.getItem('theme') || 'dark';
+if (currentTheme === 'light') {
+  Chart.defaults.color = '#1f2937';
+  Chart.defaults.borderColor = '#dee2e6';
+} else {
+  Chart.defaults.color = '#6b6b8a';
+  Chart.defaults.borderColor = '#2a2a3a';
+}
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+
+// Workload Chart
+const workloadCtx = document.getElementById('workloadChart').getContext('2d');
+new Chart(workloadCtx, {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: [
+      {
+        label: 'Committed',
+        data: chartData.workload.committed,
+        backgroundColor: 'rgba(124, 109, 250, 0.5)',
+        borderColor: '#7c6dfa',
+        borderWidth: 1
+      },
+      {
+        label: 'Completed',
+        data: chartData.workload.completed,
+        backgroundColor: 'rgba(79, 255, 176, 0.5)',
+        borderColor: '#4fffb0',
+        borderWidth: 1
+      },
+      {
+        label: 'Carryover',
+        data: chartData.workload.carryover,
+        backgroundColor: 'rgba(255, 107, 107, 0.5)',
+        borderColor: '#ff6b6b',
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(42, 42, 58, 0.5)' }
+      },
+      x: {
+        grid: { display: false }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { padding: 15 }
+      }
+    }
+  }
+});
+
+// Performance Chart
+const perfCtx = document.getElementById('performanceChart').getContext('2d');
+new Chart(perfCtx, {
+  type: 'line',
+  data: {
+    labels: chartData.labels,
+    datasets: [
+      {
+        label: 'Contributors',
+        data: chartData.performance.contributors,
+        borderColor: '#4fffb0',
+        backgroundColor: 'rgba(79, 255, 176, 0.1)',
+        tension: 0.4,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Points/Contributor',
+        data: chartData.performance.points_per_contributor,
+        borderColor: '#7c6dfa',
+        backgroundColor: 'rgba(124, 109, 250, 0.1)',
+        tension: 0.4,
+        yAxisID: 'y1',
+        hidden: false
+      },
+      {
+        label: 'Reliability %',
+        data: chartData.performance.reliability,
+        borderColor: '#ffd93d',
+        backgroundColor: 'rgba(255, 217, 61, 0.1)',
+        tension: 0.4,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: { display: true, text: 'Contributors', color: '#4fffb0' },
+        grid: { color: 'rgba(42, 42, 58, 0.5)' }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        suggestedMax: 150,
+        title: { display: true, text: 'Points & %', color: '#7c6dfa' },
+        grid: { drawOnChartArea: false }
+      },
+      x: {
+        grid: { display: false }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { padding: 15 }
+      }
+    }
+  }
+});
+
+// Sprint data caching
+const CACHE_KEY_PREFIX = 'sprint_data_';
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function getCacheKey(project, count) {
+  return `${CACHE_KEY_PREFIX}${project}_${count}`;
+}
+
+function getCachedSprintData(project, count) {
+  const cacheKey = getCacheKey(project, count);
+  const cached = localStorage.getItem(cacheKey);
+
+  if (!cached) return null;
+
+  try {
+    const parsed = JSON.parse(cached);
+    const age = Date.now() - new Date(parsed.timestamp).getTime();
+
+    if (age > CACHE_TTL_MS) {
+      localStorage.removeItem(cacheKey);
+      return null;
+    }
+
+    return parsed.data;
+  } catch (e) {
+    localStorage.removeItem(cacheKey);
+    return null;
+  }
+}
+
+function setCachedSprintData(project, count, data) {
+  const cacheKey = getCacheKey(project, count);
+  const cacheData = {
+    project,
+    count,
+    timestamp: new Date().toISOString(),
+    data
+  };
+  localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+}
+
+// Helper to get project+team config
+function getProjectTeamConfig(projectKey, teamId = null) {
+  const configs = JSON.parse(localStorage.getItem('projectTeamConfigs') || '{}');
+  const key = teamId ? `${projectKey}:${teamId}` : projectKey;
+  return configs[key] || { workflowType: 'agile' };
+}
+
+// Check if page needs to reload with settings-based query params
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const jiraProject = localStorage.getItem('jiraProject') || 'PROJ';
+  const jiraTeamId = localStorage.getItem('jiraTeamId') || '2490';
+
+  // Get workflow type from project+team config
+  const projectTeamConfig = getProjectTeamConfig(jiraProject, jiraTeamId);
+  const workflowType = projectTeamConfig.workflowType || 'agile';
+
+  const startDate = localStorage.getItem('startDate') || '';
+  const endDate = localStorage.getItem('endDate') || '';
+
+  const currentProject = urlParams.get('project') || 'PROJ';
+  const currentTeamId = urlParams.get('team_id') || '2490';
+  const currentWorkflow = urlParams.get('workflow') || 'agile';
+  const currentStartDate = urlParams.get('start_date') || '';
+  const currentEndDate = urlParams.get('end_date') || '';
+
+  if (currentProject !== jiraProject ||
+      currentTeamId !== jiraTeamId ||
+      currentWorkflow !== workflowType ||
+      (workflowType === 'kanban' && (currentStartDate !== startDate || currentEndDate !== endDate))) {
+    let newUrl = `/sprint?project=${jiraProject}&team_id=${jiraTeamId}&workflow=${workflowType}`;
+    if (workflowType === 'kanban' && startDate) {
+      newUrl += `&start_date=${startDate}`;
+    }
+    if (workflowType === 'kanban' && endDate) {
+      newUrl += `&end_date=${endDate}`;
+    }
+    window.location.href = newUrl;
+    return;
+  }
+
+  // Update page title and Kanban notice based on CURRENT URL (not localStorage)
+  const actualWorkflow = urlParams.get('workflow') || 'agile';
+  const pageTitle = actualWorkflow === 'kanban' ? 'KANBAN<span>//</span>ANALYTICS' : 'SPRINT<span>//</span>ANALYTICS';
+  document.getElementById('pageTitle').innerHTML = pageTitle;
+
+  // Show Kanban notice if in Kanban mode
+  const kanbanNotice = document.getElementById('kanbanNotice');
+  if (kanbanNotice) {
+    kanbanNotice.style.display = actualWorkflow === 'kanban' ? 'block' : 'none';
+  }
+
+  // Display team info
+  const teamInfo = document.getElementById('teamInfo');
+  if (teamInfo) {
+    const teamName = localStorage.getItem('jiraTeamName') || 'AIF Foundations';
+    teamInfo.textContent = `${jiraProject} • ${teamName}`;
+  }
+});
+
+// Background prefetch for next page load
+window.reloadPageData = function() {
+  const jiraProject = localStorage.getItem('jiraProject') || 'PROJ';
+  const count = 5;
+
+  const cached = getCachedSprintData(jiraProject, count);
+  if (cached) {
+    console.log('Using cached sprint data');
+    return;
+  }
+
+  console.log('Fetching fresh sprint data in background...');
+  fetch(`/api/sprint-data?project=${jiraProject}&count=${count}`)
+    .then(res => res.json())
+    .then(json => {
+      if (json.data) {
+        setCachedSprintData(jiraProject, count, json.data);
+        console.log('Sprint data cached for next page load');
+
+        // Auto-update workflow type if detected
+        if (json.workflow) {
+          const jiraTeamId = localStorage.getItem('jiraTeamId') || null;
+          const projectTeamConfig = getProjectTeamConfig(jiraProject, jiraTeamId);
+          const currentWorkflow = projectTeamConfig.workflowType || 'agile';
+
+          if (json.workflow !== currentWorkflow) {
+            console.log(`Auto-detected workflow: ${json.workflow} for ${jiraProject}${jiraTeamId ? ':' + jiraTeamId : ''} (was: ${currentWorkflow})`);
+
+            // Update per-project-team config
+            const configs = JSON.parse(localStorage.getItem('projectTeamConfigs') || '{}');
+            const key = jiraTeamId ? `${jiraProject}:${jiraTeamId}` : jiraProject;
+            configs[key] = { workflowType: json.workflow };
+            localStorage.setItem('projectTeamConfigs', JSON.stringify(configs));
+          }
+        }
+
+        location.reload();
+      }
+    })
+    .catch(err => console.error('Failed to fetch sprint data:', err));
+};
+</script>
+{% endblock %}

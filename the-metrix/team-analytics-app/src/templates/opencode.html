@@ -1,0 +1,1303 @@
+{% extends "base_layout.html" %}
+
+{% block title %}AI Stats · THE METRIX{% endblock %}
+{% block nav_opencode %}active{% endblock %}
+
+{% block extra_style %}
+/* OpenCode-specific styles */
+.header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+.header-sub { font-size: 11px; color: var(--muted); }
+
+.tabs { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px; margin-bottom: 28px; width: fit-content; }
+.tab { padding: 8px 20px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; color: var(--muted); border: 1px solid transparent; background: none; transition: all 0.2s; }
+.tab.active { background: var(--surface2); color: var(--accent); border-color: var(--border); }
+.tab:hover:not(.active) { color: var(--text); }
+.panel { display: none; min-height: 600px; }
+.panel.active { display: block; }
+
+.paste-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .paste-layout { grid-template-columns: 1fr; } }
+
+.card h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.card-desc { font-size: 11px; color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
+
+.paste-box { width: 100%; min-height: 260px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; color: var(--accent4); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; resize: vertical; line-height: 1.7; transition: border-color 0.2s; }
+.paste-box:focus { border-color: var(--accent); }
+.paste-box::placeholder { color: var(--muted); }
+
+.parse-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn-danger { background: rgba(255,107,107,0.1); color: var(--accent3); border: 1px solid rgba(255,107,107,0.3); }
+
+.parsed-preview { margin-top: 20px; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; display: none; }
+.parsed-preview h3 { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; margin-bottom: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+.parsed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.parsed-stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.parsed-stat .ps-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.parsed-stat .ps-val { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; color: var(--accent); font-feature-settings: 'tnum' 1; }
+.parsed-stat .ps-unit { font-size: 11px; color: var(--muted); }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.field input, .field select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.2s; }
+.field input:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--muted); }
+.field select option { background: var(--surface2); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; position: relative; overflow: hidden; transition: transform 0.2s; }
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi-card.green::before { background: var(--accent); }
+.kpi-card.purple::before { background: var(--accent2); }
+.kpi-card.yellow::before { background: var(--accent4); }
+.kpi-card.red::before { background: var(--accent3); }
+.kpi-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.kpi-value { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; font-feature-settings: 'tnum' 1; }
+.kpi-unit { font-size: 12px; font-weight: 400; opacity: 0.5; margin-left: 3px; }
+.kpi-sub { font-size: 10px; color: var(--muted); }
+
+.breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; }
+.breakdown-card h3 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+.breakdown-card canvas { margin: auto 0; }
+.bar-row { margin-bottom: 14px; }
+.bar-meta { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+.bar-name { color: var(--text); }
+.bar-stats { color: var(--muted); font-size: 10px; }
+.bar-track { background: var(--surface2); border-radius: 3px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+.count-badge { font-size: 10px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; color: var(--muted); }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th { padding: 10px 14px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); background: var(--surface2); border-bottom: 1px solid var(--border); }
+tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(42,42,58,0.5); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+.savings-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(79,255,176,0.1); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+
+.empty-state { padding: 40px; text-align: center; color: var(--muted); }
+.empty-state .icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+.help-box { background: rgba(79,255,176,0.04); border: 1px solid rgba(79,255,176,0.15); border-radius: 8px; padding: 14px 16px; font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.help-box strong { color: var(--accent); }
+.help-box code { font-family: 'DM Mono'; background: var(--surface2); padding: 2px 6px; border-radius: 3px; color: var(--accent4); font-size: 10px; }
+
+canvas.trend-c { width: 100%; height: 100px; display: block; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: #000; padding: 12px 20px; border-radius: 8px; font-size: 12px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 200; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+.tag { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.tag.dev { background: rgba(124,109,250,0.1); color: var(--accent2); border-color: rgba(124,109,250,0.25); }
+
+/* Skeleton loading animation */
+.skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-kpi { height: 80px; margin-bottom: 14px; }
+.skeleton-bar { height: 60px; margin-bottom: 12px; }
+.skeleton-chart { height: 100px; }
+.loading-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 10; }
+.loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.wpm-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.wpm-field label { display: block; font-size: 9px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+.wpm-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 7px 10px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; }
+.wpm-field input:focus { border-color: var(--accent); }
+{% endblock %}
+
+{% block content %}
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">AI<span>//</span>STATS</div>
+      <div class="demo-badge">DEMO MODE</div>
+      <div class="header-sub">OpenCode session analysis · <strong id="session-count" style="color:var(--accent4)">0</strong> sessions saved</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button type="button" class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+    <button type="button" class="tab" onclick="showTab('history')">Session History</button>
+    <button type="button" class="tab" onclick="showTab('settings')">WPM Settings</button>
+    <button type="button" class="tab" onclick="showTab('import')">Import Session</button>
+  </div>
+
+  <!-- IMPORT PANEL -->
+  <div class="panel" id="panel-import">
+    <div class="paste-layout">
+      <div class="card">
+        <h2>Paste OpenCode Output</h2>
+        <p class="card-desc">
+          Run your CLI tool and copy the stdout output. Paste it below — the parser will extract action counts, time estimates, and compute time saved vs. manual work based on your WPM settings.
+        </p>
+
+        <div class="help-box">
+          <strong>Expected format:</strong> The parser looks for lines containing action keywords and timing data. It handles formats like:<br>
+          <code>bash: 14 commands · avg 8.3s</code> &nbsp; <code>edit: 47 files modified</code> &nbsp; <code>read: 23 files · 18420 tokens</code><br>
+          <code>time_saved: 2.4h</code> &nbsp; <code>total_actions: 84</code> &nbsp; <code>session_duration: 34m</code><br><br>
+          <strong>Flexible:</strong> The parser also picks up plain numbers next to keywords, so most stdout formats will work. Paste raw and click Parse.
+        </div>
+
+        <textarea class="paste-box" id="paste-input" placeholder="Paste your OpenCode CLI output here...
+
+Example:
+=== OpenCode Session Summary ===
+Session: 2025-04-21 14:32
+Duration: 47m 12s
+
+Actions:
+  bash_commands:    23   avg_duration: 6.2s   time_saved: 2.1h
+  file_reads:       41   avg_tokens: 820      time_saved: 1.4h
+  file_edits:       18   avg_lines: 34        time_saved: 0.9h
+  searches:          7   time_saved: 0.3h
+
+Total time saved: 4.7h
+Developer: alice
+Project: api-service
+"></textarea>
+
+        <div class="parse-actions">
+          <button class="btn btn-primary" onclick="parseAndPreview()">⚡ Parse Output</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('paste-input').value=''">Clear</button>
+          <button class="btn btn-secondary" onclick="loadDemo()">Load Demo</button>
+        </div>
+
+        <div class="parsed-preview" id="parsed-preview">
+          <h3>Parsed — Review Before Saving</h3>
+          <div class="parsed-grid" id="parsed-grid"></div>
+          <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div class="field" style="flex:1;min-width:160px;margin:0">
+              <label>Developer</label>
+              <input type="text" id="p-dev" placeholder="e.g. alice" />
+            </div>
+            <div class="field" style="flex:1;min-width:160px;margin:0">
+              <label>Project</label>
+              <input type="text" id="p-project" placeholder="e.g. api-service" />
+            </div>
+            <div class="field" style="flex:1;min-width:160px;margin:0">
+              <label>Sprint / Date label</label>
+              <input type="text" id="p-sprint" placeholder="e.g. Sprint 24" />
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="saveSession()">💾 Save Session</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('parsed-preview').style.display='none'">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <h3 style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em">All-Time Totals</h3>
+          <div id="alltime-stats">
+            <div class="empty-state" style="padding:16px 0"><div class="icon">⚡</div><p style="font-size:11px">No sessions yet</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em">Top Developers</h3>
+          <div id="top-devs">
+            <div class="empty-state" style="padding:16px 0"><div class="icon">👾</div><p style="font-size:11px">No sessions yet</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PANEL -->
+  <div class="panel active" id="panel-dashboard" data-feedback-component="opencode-dashboard" data-feedback-label="AI Stats Dashboard">
+
+    <!-- Loading skeletons (shown initially, hidden after data loads) -->
+    <div id="dashboard-skeleton" style="display:block">
+      <div class="kpi-grid">
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+      </div>
+      <div class="two-col" style="margin-bottom:20px">
+        <div class="breakdown-card"><div class="skeleton skeleton-chart"></div></div>
+        <div class="breakdown-card"><div class="skeleton skeleton-chart"></div></div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="kpi-grid" style="display:none">
+      <div class="kpi-card green">
+        <div class="kpi-label">Total Time Saved</div>
+        <div class="kpi-value" id="kpi-total-saved">—<span class="kpi-unit">hrs</span></div>
+        <div class="kpi-sub" id="kpi-saved-sub">across all sessions</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Total Sessions</div>
+        <div class="kpi-value" id="kpi-sessions">—</div>
+        <div class="kpi-sub">logged</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Avg Saved / Session</div>
+        <div class="kpi-value" id="kpi-avg-saved">—<span class="kpi-unit">hrs</span></div>
+        <div class="kpi-sub">per OpenCode session</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Total Actions</div>
+        <div class="kpi-value" id="kpi-actions">—</div>
+        <div class="kpi-sub">bash + read + edit + search</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Bash Commands</div>
+        <div class="kpi-value" id="kpi-bash">—</div>
+        <div class="kpi-sub" id="kpi-bash-sub">total</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Files Read</div>
+        <div class="kpi-value" id="kpi-reads">—</div>
+        <div class="kpi-sub" id="kpi-reads-sub">total</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Files Edited</div>
+        <div class="kpi-value" id="kpi-edits">—</div>
+        <div class="kpi-sub" id="kpi-edits-sub">total</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Efficiency Ratio</div>
+        <div class="kpi-value" id="kpi-ratio">—<span class="kpi-unit">×</span></div>
+        <div class="kpi-sub">work saved per hour of use</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="breakdown-card">
+        <h3>Time Saved by Action Type</h3>
+        <div id="action-breakdown-skeleton" style="display:block">
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+        </div>
+        <div id="action-breakdown" style="display:none"></div>
+      </div>
+      <div class="breakdown-card">
+        <h3>Session Efficiency Trend</h3>
+        <div id="chart-skeleton" style="display:block">
+          <div class="skeleton skeleton-chart"></div>
+        </div>
+        <canvas class="trend-c" id="chart-savings"></canvas>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center" id="chart-subtitle">hours saved per session (last 15 sessions)</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="breakdown-card">
+        <h3>By Developer</h3>
+        <div id="dev-breakdown-skeleton" style="display:block">
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+        </div>
+        <div id="dev-breakdown" style="display:none"></div>
+      </div>
+      <div class="breakdown-card">
+        <h3>By Project</h3>
+        <div id="project-breakdown-skeleton" style="display:block">
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+          <div class="skeleton skeleton-bar"></div>
+        </div>
+        <div id="project-breakdown" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- NEW: Per-Project Activity View -->
+    <div class="breakdown-card" style="margin-top:20px">
+      <h3>Daily Activity by Project <span class="tag" style="margin-left:8px">NEW</span></h3>
+      <div style="margin-bottom:12px;font-size:11px;color:var(--muted)">
+        Detailed per-project per-day metrics from automated submissions
+      </div>
+      <div id="activity-breakdown-skeleton" style="display:none">
+        <div class="skeleton skeleton-bar"></div>
+        <div class="skeleton skeleton-bar"></div>
+        <div class="skeleton skeleton-bar"></div>
+        <div class="skeleton skeleton-bar"></div>
+        <div class="skeleton skeleton-bar"></div>
+      </div>
+      <div id="activity-breakdown"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div class="section-header">
+      <div class="section-title">Session History <span class="count-badge" id="hist-count">0</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="exportSessions()">⬇ Export JSON</button>
+        <button class="btn btn-danger btn-sm" onclick="clearSessions()">✕ Clear All</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div id="history-skeleton" style="display:none; padding:20px">
+        <div class="skeleton skeleton-bar" style="height:40px; margin-bottom:8px"></div>
+        <div class="skeleton skeleton-bar" style="height:40px; margin-bottom:8px"></div>
+        <div class="skeleton skeleton-bar" style="height:40px; margin-bottom:8px"></div>
+        <div class="skeleton skeleton-bar" style="height:40px; margin-bottom:8px"></div>
+        <div class="skeleton skeleton-bar" style="height:40px"></div>
+      </div>
+      <table id="history-table-container">
+        <thead>
+          <tr>
+            <th>Date</th><th>Developer</th><th>Project</th>
+            <th>Time Saved</th><th>Bash</th><th>Reads</th><th>Edits</th><th>Total Actions</th>
+          </tr>
+        </thead>
+        <tbody id="history-table">
+          <tr><td colspan="8"><div class="empty-state"><div class="icon">📭</div><p>No activity logged yet</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="card" style="max-width:600px">
+      <h2>WPM & Time Assumptions</h2>
+      <p class="card-desc">These values control how your CLI calculates manual time equivalents. Tune them to match your team's actual pace for accurate savings estimates.</p>
+
+      <div class="wpm-row">
+        <div class="wpm-field">
+          <label>Developer WPM</label>
+          <input type="number" id="s-wpm" value="60" min="20" max="150" />
+        </div>
+        <div class="wpm-field">
+          <label>Avg chars/bash cmd</label>
+          <input type="number" id="s-bash-chars" value="40" />
+        </div>
+        <div class="wpm-field">
+          <label>Avg bash exec time (s)</label>
+          <input type="number" id="s-bash-exec" value="8" />
+        </div>
+        <div class="wpm-field">
+          <label>File read time (s/file)</label>
+          <input type="number" id="s-read-time" value="45" />
+        </div>
+        <div class="wpm-field">
+          <label>File edit time (s/file)</label>
+          <input type="number" id="s-edit-time" value="120" />
+        </div>
+        <div class="wpm-field">
+          <label>Search time (s/search)</label>
+          <input type="number" id="s-search-time" value="30" />
+        </div>
+      </div>
+
+      <div class="help-box" style="margin-bottom:16px">
+        <strong>Manual time formula:</strong><br>
+        Bash: <code>(chars / (wpm × 5 / 60)) + exec_time</code> per command<br>
+        Read: <code>read_time</code> per file<br>
+        Edit: <code>edit_time</code> per file<br>
+        Search: <code>search_time</code> per search<br><br>
+        These are the fallback values used when your CLI stdout doesn't include explicit time_saved figures.
+      </div>
+
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ==================== STATE ====================
+const API_BASE = "/api";  // FastAPI proxy (same origin)
+const SETTINGS_KEY = 'metrix_oc_settings';
+let sessions = [];
+let activities = [];
+let pendingSession = null;
+
+const DEFAULT_SETTINGS = {
+  wpm: 60,
+  bashChars: 40,
+  bashExec: 8,
+  readTime: 45,
+  editTime: 120,
+  searchTime: 30,
+};
+
+function getSettings() {
+  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch(e) { return DEFAULT_SETTINGS; }
+}
+
+function generateDemoSessions() {
+  const demoSessions = [];
+  const projects = ['main-project', 'platform-ops', 'daily-metrics', 'metrics-api', 'team-analytics'];
+  const sprints = ['Sprint 12', 'Sprint 13', 'Sprint 14', 'Sprint 15'];
+
+  for (let i = 0; i < 62; i++) {
+    const project = projects[Math.floor(Math.random() * projects.length)];
+    const sprint = sprints[Math.floor(Math.random() * sprints.length)];
+    const bash = Math.floor(Math.random() * 80) + 10; // 10-90
+    const reads = Math.floor(Math.random() * 50) + 5; // 5-55
+    const edits = Math.floor(Math.random() * 40) + 3; // 3-43
+    const searches = Math.floor(Math.random() * 15) + 1; // 1-16
+    // More variable time savings (0.5-8 hours range)
+    const timeSavedBash = bash * (0.03 + Math.random() * 0.05);
+    const timeSavedReads = reads * (0.01 + Math.random() * 0.03);
+    const timeSavedEdits = edits * (0.05 + Math.random() * 0.08);
+    const timeSavedSearches = searches * (0.02 + Math.random() * 0.04);
+
+    const totalSaved = timeSavedBash + timeSavedReads + timeSavedEdits + timeSavedSearches;
+    demoSessions.push({
+      id: `demo-${i}`,
+      savedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      developer: 'demo-user',
+      project: project,
+      sprint: sprint,
+      bash: bash,
+      reads: reads,
+      edits: edits,
+      searches: searches,
+      timeSavedBash: timeSavedBash,
+      timeSavedReads: timeSavedReads,
+      timeSavedEdits: timeSavedEdits,
+      timeSavedSearches: timeSavedSearches,
+      timeSavedTotal: totalSaved,
+      sessionDuration: Math.floor(Math.random() * 120) + 30,
+    });
+  }
+  return demoSessions;
+}
+
+function generateDemoActivities() {
+  const demoActivities = [];
+  const projects = ['main-project', 'platform-ops', 'daily-metrics', 'metrics-api', 'team-analytics'];
+  
+  // Generate 30 days of activity
+  for (let i = 0; i < 30; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // 2-3 projects active per day
+    const activeProjects = Math.floor(Math.random() * 2) + 2;
+    const shuffled = [...projects].sort(() => Math.random() - 0.5);
+    
+    for (let j = 0; j < activeProjects; j++) {
+      const project = shuffled[j];
+      const bash = Math.floor(Math.random() * 50) + 10;
+      const reads = Math.floor(Math.random() * 30) + 5;
+      const edits = Math.floor(Math.random() * 20) + 3;
+      const writes = Math.floor(Math.random() * 10) + 1;
+      const searches = Math.floor(Math.random() * 10) + 1;
+      
+      const timeSaved = (bash * 0.04) + (reads * 0.02) + (edits * 0.08) + (writes * 0.1) + (searches * 0.03);
+      
+      demoActivities.push({
+        date: dateStr,
+        project_name: project,
+        project_path: `/home/user/projects/${project}`,
+        bash_commands: bash,
+        file_reads: reads,
+        file_edits: edits,
+        file_writes: writes,
+        searches: searches,
+        time_saved_total: timeSaved
+      });
+    }
+  }
+  
+  return demoActivities;
+}
+
+function loadSessions() {
+  // Show all skeleton loading indicators
+  const skeleton = document.getElementById('dashboard-skeleton');
+  const actionSkel = document.getElementById('action-breakdown-skeleton');
+  const devSkel = document.getElementById('dev-breakdown-skeleton');
+  const projectSkel = document.getElementById('project-breakdown-skeleton');
+  const chartSkel = document.getElementById('chart-skeleton');
+  const actSkel = document.getElementById('activity-breakdown-skeleton');
+  const histSkel = document.getElementById('history-skeleton');
+  const histTable = document.getElementById('history-table-container');
+
+  if (skeleton) skeleton.style.display = 'block';
+  if (actionSkel) actionSkel.style.display = 'block';
+  if (devSkel) devSkel.style.display = 'block';
+  if (projectSkel) projectSkel.style.display = 'block';
+  if (chartSkel) chartSkel.style.display = 'block';
+  if (actSkel) actSkel.style.display = 'block';
+  if (histSkel) histSkel.style.display = 'block';
+  if (histTable) histTable.style.display = 'none';
+
+  // Check for demo mode
+  if (window.DEMO_MODE) {
+    sessions = generateDemoSessions();
+    activities = generateDemoActivities();
+    if (skeleton) skeleton.style.display = 'none';
+    if (actSkel) actSkel.style.display = 'none';
+    renderAll();
+    renderActivityBreakdown();
+    return;
+  }
+
+  // Load sessions from API
+  fetch(`${API_BASE}/opencode/sessions?limit=1000`)
+    .then(res => res.json())
+    .then(data => {
+      sessions = data.sessions || [];
+      if (skeleton) skeleton.style.display = 'none';
+      renderAll();
+    })
+    .catch(err => {
+      console.error('Failed to load sessions:', err);
+      sessions = [];
+      if (skeleton) skeleton.style.display = 'none';
+      renderAll();
+    });
+
+  // Also load activities
+  loadActivities();
+}
+
+function loadActivities() {
+  // Check for demo mode
+  if (window.DEMO_MODE) {
+    activities = generateDemoActivities();
+    renderActivityBreakdown();
+    return;
+  }
+
+  // Get last 30 days of activity
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 30);
+
+  const startStr = startDate.toISOString().split('T')[0];
+  const endStr = endDate.toISOString().split('T')[0];
+
+  fetch(`${API_BASE}/opencode/activity?start_date=${startStr}&end_date=${endStr}&limit=500`)
+    .then(res => res.json())
+    .then(data => {
+      activities = data.activities || [];
+      renderActivityBreakdown();
+      // If no sessions, re-render dashboard and history with activity data
+      if (!sessions.length && activities.length > 0) {
+        // Update counts
+        document.getElementById('session-count').textContent = activities.length;
+        document.getElementById('hist-count').textContent = activities.length;
+        renderDashboard();
+        renderHistory();
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load activities:', err);
+      activities = [];
+      renderActivityBreakdown();
+    });
+}
+
+function saveSessions() {
+  // Sessions saved individually via saveSession()
+}
+
+// ==================== PARSER ====================
+function parseOutput(text) {
+  const s = getSettings();
+  const result = {
+    bash: 0, reads: 0, edits: 0, searches: 0,
+    timeSavedBash: 0, timeSavedReads: 0, timeSavedEdits: 0, timeSavedSearches: 0,
+    timeSavedTotal: 0, sessionDuration: 0,
+    developer: '', project: '', rawText: text,
+  };
+
+  const lines = text.split('\n');
+
+  // Patterns to extract
+  const patterns = {
+    bash:      [/bash[_\s-]?(?:commands?)?[:\s]+(\d+)/i, /(\d+)\s+bash/i],
+    reads:     [/file[_\s-]?reads?[:\s]+(\d+)/i, /reads?[:\s]+(\d+)/i, /(\d+)\s+files?\s+read/i],
+    edits:     [/file[_\s-]?(?:edits?|modified)[:\s]+(\d+)/i, /edits?[:\s]+(\d+)/i, /(\d+)\s+files?\s+(?:edit|modif)/i],
+    searches:  [/searches?[:\s]+(\d+)/i, /(\d+)\s+searches?/i],
+    timeSaved: [/(?:total[_\s-]?)?time[_\s-]?saved[:\s]+([0-9.]+)\s*h/i, /saved[:\s]+([0-9.]+)\s*h/i],
+    timeSavedBash:    [/bash[^:]*time[_\s-]?saved[:\s]+([0-9.]+)\s*h/i, /bash[^:]*:\s*[\d]+[^:]*time_saved[:\s]+([0-9.]+)\s*h/i],
+    timeSavedReads:   [/(?:file[_\s-]?)?reads?[^:]*time[_\s-]?saved[:\s]+([0-9.]+)\s*h/i],
+    timeSavedEdits:   [/(?:file[_\s-]?)?edits?[^:]*time[_\s-]?saved[:\s]+([0-9.]+)\s*h/i],
+    timeSavedSearches:[/searches?[^:]*time[_\s-]?saved[:\s]+([0-9.]+)\s*h/i],
+    duration:  [/(?:session[_\s-]?)?duration[:\s]+(\d+)m/i, /(\d+)m\s*\d*s?\s*$/m, /(\d+)\s*min/i],
+    developer: [/developer[:\s]+([^\n]+)/i, /dev[:\s]+([^\n]+)/i, /user[:\s]+([^\n]+)/i],
+    project:   [/project[:\s]+([^\n]+)/i, /repo[:\s]+([^\n]+)/i, /service[:\s]+([^\n]+)/i],
+  };
+
+  function extract(key) {
+    for (const re of (patterns[key] || [])) {
+      const m = text.match(re);
+      if (m) return m[1].trim();
+    }
+    return null;
+  }
+
+  result.bash     = parseInt(extract('bash') || 0) || 0;
+  result.reads    = parseInt(extract('reads') || 0) || 0;
+  result.edits    = parseInt(extract('edits') || 0) || 0;
+  result.searches = parseInt(extract('searches') || 0) || 0;
+  result.developer = extract('developer') || '';
+  result.project   = extract('project') || '';
+
+  // Duration in minutes
+  const durMatch = text.match(/duration[:\s]+(?:(\d+)h\s*)?(\d+)m(?:\s*(\d+)s)?/i);
+  if (durMatch) {
+    result.sessionDuration = (parseInt(durMatch[1]||0)*60) + parseInt(durMatch[2]||0) + (parseInt(durMatch[3]||0)/60);
+  } else {
+    const durMins = extract('duration');
+    if (durMins) result.sessionDuration = parseFloat(durMins);
+  }
+
+  // Per-type time saved from output
+  const ts = parseFloat(extract('timeSaved') || 0) || 0;
+  const tsb = parseFloat(extract('timeSavedBash') || 0) || 0;
+  const tsr = parseFloat(extract('timeSavedReads') || 0) || 0;
+  const tse = parseFloat(extract('timeSavedEdits') || 0) || 0;
+  const tss = parseFloat(extract('timeSavedSearches') || 0) || 0;
+
+  if (tsb || tsr || tse || tss) {
+    result.timeSavedBash = tsb;
+    result.timeSavedReads = tsr;
+    result.timeSavedEdits = tse;
+    result.timeSavedSearches = tss;
+    result.timeSavedTotal = tsb + tsr + tse + tss;
+  } else if (ts > 0) {
+    result.timeSavedTotal = ts;
+    // Estimate breakdown proportionally
+    const total = result.bash + result.reads + result.edits + result.searches || 1;
+    result.timeSavedBash = ts * (result.bash / total);
+    result.timeSavedReads = ts * (result.reads / total);
+    result.timeSavedEdits = ts * (result.edits / total);
+    result.timeSavedSearches = ts * (result.searches / total);
+  } else {
+    // Calculate from WPM assumptions
+    const charsPerMin = s.wpm * 5;
+    const bashManual = result.bash * ((s.bashChars / charsPerMin) + s.bashExec / 60); // minutes
+    const readsManual = result.reads * (s.readTime / 60);
+    const editsManual = result.edits * (s.editTime / 60);
+    const searchManual = result.searches * (s.searchTime / 60);
+
+    result.timeSavedBash = bashManual / 60;
+    result.timeSavedReads = readsManual / 60;
+    result.timeSavedEdits = editsManual / 60;
+    result.timeSavedSearches = searchManual / 60;
+    result.timeSavedTotal = result.timeSavedBash + result.timeSavedReads + result.timeSavedEdits + result.timeSavedSearches;
+  }
+
+  return result;
+}
+
+function parseAndPreview() {
+  const text = document.getElementById('paste-input').value.trim();
+  if (!text) { showToast('Paste some output first', 'error'); return; }
+
+  const parsed = parseOutput(text);
+  pendingSession = parsed;
+
+  // Populate meta fields from parsed
+  if (parsed.developer) document.getElementById('p-dev').value = parsed.developer;
+  if (parsed.project) document.getElementById('p-project').value = parsed.project;
+
+  const grid = document.getElementById('parsed-grid');
+  const stats = [
+    { label: 'Time Saved', val: parsed.timeSavedTotal.toFixed(1), unit: 'hrs' },
+    { label: 'Bash Cmds', val: parsed.bash, unit: '' },
+    { label: 'Files Read', val: parsed.reads, unit: '' },
+    { label: 'Files Edited', val: parsed.edits, unit: '' },
+    { label: 'Searches', val: parsed.searches, unit: '' },
+    { label: 'Session Duration', val: parsed.sessionDuration ? parsed.sessionDuration.toFixed(0) : '?', unit: 'min' },
+    { label: 'Total Actions', val: parsed.bash + parsed.reads + parsed.edits + parsed.searches, unit: '' },
+    { label: 'Bash Saved', val: parsed.timeSavedBash.toFixed(1), unit: 'hrs' },
+    { label: 'Read Saved', val: parsed.timeSavedReads.toFixed(1), unit: 'hrs' },
+    { label: 'Edit Saved', val: parsed.timeSavedEdits.toFixed(1), unit: 'hrs' },
+  ];
+
+  grid.innerHTML = stats.map(s => `
+    <div class="parsed-stat">
+      <div class="ps-label">${s.label}</div>
+      <div class="ps-val">${s.val}<span class="ps-unit"> ${s.unit}</span></div>
+    </div>`).join('');
+
+  document.getElementById('parsed-preview').style.display = 'block';
+  showToast('Parsed! Review and save.');
+}
+
+function saveSession() {
+  if (!pendingSession) return;
+  const session = {
+    ...pendingSession,
+    id: Date.now().toString(),
+    saved_at: new Date().toISOString(),  // Use snake_case for API consistency
+    developer: document.getElementById('p-dev').value.trim() || 'Unknown',
+    project: document.getElementById('p-project').value.trim() || 'Unknown',
+    sprint: document.getElementById('p-sprint').value.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  };
+
+  // Submit to API
+  fetch(`${API_BASE}/opencode/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: session.id,
+      saved_at: session.saved_at,
+      developer: session.developer,
+      project: session.project,
+      sprint: session.sprint,
+      bash: session.bash,
+      reads: session.reads,
+      edits: session.edits,
+      searches: session.searches,
+      time_saved_bash: session.timeSavedBash,
+      time_saved_reads: session.timeSavedReads,
+      time_saved_edits: session.timeSavedEdits,
+      time_saved_searches: session.timeSavedSearches,
+      time_saved_total: session.timeSavedTotal,
+      session_duration: session.sessionDuration,
+      raw_text: session.rawText,
+    }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      sessions.push(session);
+      renderAll();
+      pendingSession = null;
+      document.getElementById('parsed-preview').style.display = 'none';
+      document.getElementById('paste-input').value = '';
+      showToast('✓ Session saved!');
+    } else {
+      showToast('Failed to save session', 'error');
+    }
+  })
+  .catch(err => {
+    console.error('Failed to submit session:', err);
+    showToast('Error saving session', 'error');
+  });
+}
+
+// ==================== DEMO ====================
+function loadDemo() {
+  document.getElementById('paste-input').value = `=== OpenCode Session Summary ===
+Session: ${new Date().toISOString().slice(0,16)}
+Duration: 52m 14s
+
+Actions:
+  bash_commands:    31   avg_duration: 7.1s   time_saved: 2.8h
+  file_reads:       54   avg_tokens: 940      time_saved: 1.9h
+  file_edits:       22   avg_lines: 41        time_saved: 1.2h
+  searches:         11                        time_saved: 0.4h
+
+Total time saved: 6.3h
+Developer: alice
+Project: api-service
+Sprint: Sprint 24
+`;
+  parseAndPreview();
+}
+
+// ==================== RENDER ====================
+function renderAll() {
+  document.getElementById('session-count').textContent = sessions.length;
+  document.getElementById('hist-count').textContent = sessions.length;
+  renderSidebar();
+  renderDashboard();
+  renderHistory();
+}
+
+function renderSidebar() {
+  const totalSaved = sessions.reduce((a,s) => a + (s.timeSavedTotal || s.time_saved_total || 0), 0);
+  const totalActions = sessions.reduce((a,s) => a + (s.bash||0) + (s.reads||0) + (s.edits||0) + (s.searches||0), 0);
+
+  const statsEl = document.getElementById('alltime-stats');
+  if (!sessions.length) {
+    statsEl.innerHTML = `<div class="empty-state" style="padding:16px 0"><div class="icon">⚡</div><p style="font-size:11px">No sessions yet</p></div>`;
+    document.getElementById('top-devs').innerHTML = statsEl.innerHTML;
+    return;
+  }
+
+  statsEl.innerHTML = [
+    { label: 'Total Hours Saved', val: totalSaved.toFixed(1) + 'h' },
+    { label: 'Total Sessions', val: sessions.length },
+    { label: 'Total Actions', val: totalActions.toLocaleString() },
+    { label: 'Avg Saved/Session', val: (totalSaved / sessions.length).toFixed(1) + 'h' },
+  ].map(s => `<div class="stat-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(42,42,58,.5);font-size:12px">
+    <span style="color:var(--muted)">${s.label}</span>
+    <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--accent);font-feature-settings:'tnum' 1">${s.val}</span>
+  </div>`).join('');
+
+  // Top devs
+  const devMap = {};
+  sessions.forEach(s => { const d = s.developer||'Unknown'; devMap[d] = (devMap[d]||0) + (s.timeSavedTotal || s.time_saved_total || 0); });
+  const sorted = Object.entries(devMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxV = sorted[0]?.[1] || 1;
+  document.getElementById('top-devs').innerHTML = sorted.map(([k,v]) => `
+    <div class="bar-row">
+      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-stats">${v.toFixed(1)}h saved</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxV*100).toFixed(0)}%;background:var(--accent)"></div></div>
+    </div>`).join('');
+}
+
+function renderDashboard() {
+  console.log('renderDashboard() called, sessions:', sessions.length, 'activities:', activities.length);
+  
+  // Hide all skeletons (will show KPI grid at end after populating values)
+  const skeleton = document.getElementById('dashboard-skeleton');
+  const kpiGrid = document.getElementById('kpi-grid');
+  const actionSkel = document.getElementById('action-breakdown-skeleton');
+  const devSkel = document.getElementById('dev-breakdown-skeleton');
+  const projectSkel = document.getElementById('project-breakdown-skeleton');
+  const chartSkel = document.getElementById('chart-skeleton');
+  
+  console.log('Hiding skeletons, KPI grid currently:', kpiGrid?.style.display);
+  if (skeleton) skeleton.style.display = 'none';
+  if (actionSkel) actionSkel.style.display = 'none';
+  if (devSkel) devSkel.style.display = 'none';
+  if (projectSkel) projectSkel.style.display = 'none';
+  if (chartSkel) chartSkel.style.display = 'none';
+
+  // Use activities if no sessions available
+  const dataSource = sessions.length > 0 ? sessions : activities;
+  const dataType = sessions.length > 0 ? 'sessions' : 'activities';
+
+  if (!dataSource.length) {
+    // Clear all dashboard elements when no data
+    document.getElementById('kpi-total-saved').innerHTML = '—<span class="kpi-unit">hrs</span>';
+    document.getElementById('kpi-saved-sub').textContent = 'across 0 ' + dataType;
+    document.getElementById('kpi-sessions').textContent = '—';
+    document.getElementById('kpi-avg-saved').innerHTML = '—<span class="kpi-unit">hrs</span>';
+    document.getElementById('kpi-actions').textContent = '—';
+    document.getElementById('kpi-bash').textContent = '—';
+    document.getElementById('kpi-reads').textContent = '—';
+    document.getElementById('kpi-edits').textContent = '—';
+    document.getElementById('kpi-ratio').innerHTML = '—<span class="kpi-unit">×</span>';
+    document.getElementById('action-breakdown').innerHTML = '<div class="empty-state" style="padding:20px"><p style="font-size:11px">No data available</p></div>';
+    document.getElementById('dev-breakdown').innerHTML = '<div class="empty-state" style="padding:20px"><p style="font-size:11px">No data available</p></div>';
+    document.getElementById('project-breakdown').innerHTML = '<div class="empty-state" style="padding:20px"><p style="font-size:11px">No data available</p></div>';
+    clearChart('chart-savings');
+    if (kpiGrid) kpiGrid.style.display = 'grid'; // Show grid even with no data
+    return;
+  }
+
+  const totalSaved = dataSource.reduce((a,s) => a + (s.timeSavedTotal || s.time_saved_total || 0), 0);
+  const totalBash = dataSource.reduce((a,s) => a + (s.bash || s.bash_commands || 0), 0);
+  const totalReads = dataSource.reduce((a,s) => a + (s.reads || s.file_reads || 0), 0);
+  const totalEdits = dataSource.reduce((a,s) => a + (s.edits || s.file_edits || 0), 0);
+  const totalSearches = dataSource.reduce((a,s) => a + (s.searches || 0), 0);
+  const totalActions = totalBash + totalReads + totalEdits + totalSearches;
+  
+  // Calculate total duration
+  let totalDuration = dataSource.reduce((a,s) => a + (s.sessionDuration || s.session_duration || 0), 0);
+  
+  // Calculate unique dates if using activities
+  const uniqueDates = dataType === 'activities'
+    ? new Set(dataSource.map(a => a.date)).size
+    : dataSource.length;
+
+  const avgSaved = totalSaved / uniqueDates;
+  
+  // Calculate efficiency ratio as speedup multiplier
+  let ratio = null;
+  if (dataType === 'activities') {
+    // For activities: estimate active OpenCode usage time from action counts
+    // Assume 1 minute per action (bash/read/edit/search) for interaction + thinking time
+    // This represents actual time spent using OpenCode, not full workday
+    const activeMinutes = totalActions * 1.0;  // 1 min per action
+    const activeHours = activeMinutes / 60;
+    
+    // Speedup = (active_time + time_saved) / active_time
+    // This shows: "For every hour you use OpenCode, it saves you X hours of work"
+    ratio = activeHours > 0 ? (activeHours + totalSaved) / activeHours : null;
+  } else {
+    // For sessions: use actual session duration
+    const totalDurationHours = totalDuration / 60;
+    ratio = totalDurationHours > 0 ? (totalDurationHours + totalSaved) / totalDurationHours : null;
+  }
+
+  document.getElementById('kpi-total-saved').innerHTML = totalSaved.toFixed(1) + '<span class="kpi-unit">hrs</span>';
+  document.getElementById('kpi-saved-sub').textContent = `across ${uniqueDates} ${dataType === 'activities' ? 'days' : 'sessions'}`;
+  document.getElementById('kpi-sessions').textContent = uniqueDates;
+  document.getElementById('kpi-avg-saved').innerHTML = avgSaved.toFixed(1) + '<span class="kpi-unit">hrs</span>';
+  document.getElementById('kpi-actions').textContent = totalActions.toLocaleString();
+  document.getElementById('kpi-bash').textContent = totalBash.toLocaleString();
+  document.getElementById('kpi-bash-sub').textContent = 'commands executed';
+  document.getElementById('kpi-reads').textContent = totalReads.toLocaleString();
+  document.getElementById('kpi-reads-sub').textContent = 'files read';
+  document.getElementById('kpi-edits').textContent = totalEdits.toLocaleString();
+  document.getElementById('kpi-edits-sub').textContent = 'files edited';
+  document.getElementById('kpi-ratio').innerHTML = ratio !== null ? ratio.toFixed(1) + '<span class="kpi-unit">×</span>' : 'N/A<span class="kpi-unit"></span>';
+
+  // Action breakdown bars
+  const tsb = dataSource.reduce((a,s)=>a+(s.timeSavedBash || s.time_saved_bash || 0),0);
+  const tsr = dataSource.reduce((a,s)=>a+(s.timeSavedReads || s.time_saved_reads || 0),0);
+  const tse = dataSource.reduce((a,s)=>a+(s.timeSavedEdits || s.time_saved_edits || 0),0);
+  const tss = dataSource.reduce((a,s)=>a+(s.timeSavedSearches || s.time_saved_searches || 0),0);
+  const maxTs = Math.max(tsb, tsr, tse, tss, 0.1);
+
+  const actionColors = ['#4fffb0','#7c6dfa','#ffd93d','#ff6b6b'];
+  const actions = [
+    { name: 'Bash Commands', saved: tsb, count: totalBash, color: actionColors[0] },
+    { name: 'File Reads', saved: tsr, count: totalReads, color: actionColors[1] },
+    { name: 'File Edits', saved: tse, count: totalEdits, color: actionColors[2] },
+    { name: 'Searches', saved: tss, count: totalSearches, color: actionColors[3] },
+  ];
+
+  const actionBreakdown = document.getElementById('action-breakdown');
+  actionBreakdown.innerHTML = actions.map(a => {
+    // Calculate bar width with minimum 2% for visibility if there's data
+    const percentage = (a.saved / maxTs * 100);
+    const width = a.saved > 0 ? Math.max(percentage, 2) : 0;
+    return `
+    <div class="bar-row">
+      <div class="bar-meta">
+        <span class="bar-name">${a.name}</span>
+        <span class="bar-stats">${a.saved.toFixed(1)}h saved · ${a.count} total</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${width.toFixed(1)}%;background:${a.color}"></div></div>
+    </div>`;
+  }).join('');
+  actionBreakdown.style.display = 'block';
+
+  // Savings over time
+  if (dataType === 'activities') {
+    // For activities, group by date and sum time saved per day
+    const dateMap = {};
+    dataSource.forEach(a => {
+      const date = a.date;
+      if (!dateMap[date]) dateMap[date] = 0;
+      dateMap[date] += a.time_saved_total || 0;
+    });
+    const sortedDates = Object.entries(dateMap).sort((a,b) => new Date(a[0]) - new Date(b[0])).slice(-15);
+    const dateLabels = sortedDates.map(([date]) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    const dateTotals = sortedDates.map(([,total]) => +total.toFixed(1));
+    drawTrendChart('chart-savings', dateLabels, dateTotals, '#4fffb0');
+  } else {
+    const sorted = [...dataSource].sort((a,b)=>new Date(a.saved_at || a.savedAt)-new Date(b.saved_at || b.savedAt));
+    const recentSessions = sorted.slice(-15);
+    const dateLabels = recentSessions.map(s => new Date(s.saved_at || s.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    drawTrendChart('chart-savings', dateLabels, recentSessions.map(s=>+(s.timeSavedTotal || s.time_saved_total || 0).toFixed(1)), '#4fffb0');
+  }
+
+  // Dev breakdown
+  const devMap = {};
+  dataSource.forEach(s => {
+    const d=s.developer||'Unknown';
+    if (!devMap[d]) devMap[d]={saved:0,count:0};
+    devMap[d].saved+=s.timeSavedTotal || s.time_saved_total || 0;
+    devMap[d].count++;
+  });
+  const devs = Object.entries(devMap).sort((a,b)=>b[1].saved-a[1].saved);
+  const maxDev = devs[0]?.[1].saved || 0.1;
+  const devBreakdown = document.getElementById('dev-breakdown');
+  devBreakdown.innerHTML = devs.map(([k,v]) => `
+    <div class="bar-row">
+      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-stats">${v.saved.toFixed(1)}h · ${v.count} ${dataType === 'activities' ? 'days' : 'sessions'}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v.saved/maxDev*100).toFixed(0)}%;background:var(--accent2)"></div></div>
+    </div>`).join('');
+  devBreakdown.style.display = 'block';
+
+  // Project breakdown
+  const projMap = {};
+  dataSource.forEach(s => {
+    const p=s.project||s.project_name||'Unknown';
+    if (!projMap[p]) projMap[p]={saved:0,count:0};
+    projMap[p].saved+=s.timeSavedTotal || s.time_saved_total || 0;
+    projMap[p].count++;
+  });
+  const projs = Object.entries(projMap).sort((a,b)=>b[1].saved-a[1].saved);
+  const maxProj = projs[0]?.[1].saved || 0.1;
+  const projectBreakdown = document.getElementById('project-breakdown');
+  projectBreakdown.innerHTML = projs.map(([k,v]) => `
+    <div class="bar-row">
+      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-stats">${v.saved.toFixed(1)}h · ${v.count} ${dataType === 'activities' ? 'days' : 'sessions'}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v.saved/maxProj*100).toFixed(0)}%;background:var(--accent4)"></div></div>
+    </div>`).join('');
+  projectBreakdown.style.display = 'block';
+  
+  // Show KPI grid now that all values are populated
+  console.log('Showing KPI grid with populated values');
+  if (kpiGrid) kpiGrid.style.display = 'grid';
+}
+
+function renderHistory() {
+  // Hide history skeleton
+  const histSkel = document.getElementById('history-skeleton');
+  const histTable = document.getElementById('history-table-container');
+  if (histSkel) histSkel.style.display = 'none';
+  if (histTable) histTable.style.display = 'table';
+
+  const tbody = document.getElementById('history-table');
+
+  // Use activities if no sessions
+  const dataSource = sessions.length > 0 ? sessions : activities;
+  const dataType = sessions.length > 0 ? 'sessions' : 'activities';
+
+  if (!dataSource.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">📭</div><p>No data available</p></div></td></tr>`;
+    return;
+  }
+
+  if (dataType === 'activities') {
+    // Show activities grouped by date
+    const sorted = [...dataSource].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    tbody.innerHTML = sorted.map(s => `
+      <tr>
+        <td style="color:var(--muted);font-size:10px">${new Date(s.date).toLocaleDateString()}</td>
+        <td><span class="tag dev">${s.developer||'—'}</span></td>
+        <td>${s.project_name||s.project||'—'}</td>
+        <td><span class="savings-pill">${(s.time_saved_total || 0).toFixed(1)}h</span></td>
+        <td>${(s.bash_commands||s.bash||0).toLocaleString()}</td>
+        <td>${(s.file_reads||s.reads||0).toLocaleString()}</td>
+        <td>${(s.file_edits||s.edits||0).toLocaleString()}</td>
+        <td>${((s.bash_commands||s.bash||0)+(s.file_reads||s.reads||0)+(s.file_edits||s.edits||0)+(s.searches||0)).toLocaleString()}</td>
+      </tr>`).join('');
+  } else {
+    // Show manual sessions
+    const sorted = [...dataSource].sort((a,b)=>new Date(b.saved_at || b.savedAt)-new Date(a.saved_at || a.savedAt));
+    tbody.innerHTML = sorted.map(s => `
+      <tr>
+        <td style="color:var(--muted);font-size:10px">${s.date || new Date(s.saved_at || s.savedAt).toLocaleDateString()}</td>
+        <td><span class="tag dev">${s.developer||'—'}</span></td>
+        <td>${s.project_name || s.project||'—'}</td>
+        <td><span class="savings-pill">${(s.timeSavedTotal || s.time_saved_total || 0).toFixed(1)}h</span></td>
+        <td>${(s.bash_commands || s.bash||0).toLocaleString()}</td>
+        <td>${(s.file_reads || s.reads||0).toLocaleString()}</td>
+        <td>${(s.file_edits || s.edits||0).toLocaleString()}</td>
+        <td>${((s.bash_commands || s.bash||0)+(s.file_reads || s.reads||0)+(s.file_edits || s.edits||0)+(s.searches||0)).toLocaleString()}</td>
+      </tr>`).join('');
+  }
+}
+
+// ==================== CHART ====================
+function clearChart(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawTrendChart(id, labels, data, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas || !data.length) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 400;
+  const H = 100;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0,0,W,H);
+  if (data.length < 2) {
+    ctx.fillStyle = 'rgba(107,107,138,0.4)'; ctx.font = '11px DM Mono';
+    ctx.textAlign = 'center'; ctx.fillText('Need 2+ sessions', W/2, H/2); return;
+  }
+  const padTop = 20; const padBottom = 12; const padX = 10;
+  const max = Math.max(...data, 0.1);
+  const pts = data.map((v,i)=>({ x: padX+(i/(data.length-1))*(W-padX*2), y: padTop+(1-v/max)*(H-padTop-padBottom) }));
+  ctx.beginPath(); ctx.moveTo(pts[0].x,H-padBottom);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.lineTo(pts[pts.length-1].x,H-padBottom); ctx.closePath();
+  ctx.fillStyle = color+'18'; ctx.fill();
+  ctx.beginPath(); pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  const labelColor = savedTheme === 'light' ? '#1f2937' : 'rgba(232,232,240,0.9)';
+  pts.forEach((p,i)=>{
+    ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    ctx.fillStyle=labelColor; ctx.font='600 9px DM Mono'; ctx.textAlign='center';
+    ctx.fillText(data[i]+'h',p.x,p.y-8);
+  });
+
+  // Draw X-axis date labels
+  if (labels && labels.length > 0) {
+    ctx.fillStyle = 'rgba(107,107,138,0.7)';
+    ctx.font = '9px DM Mono';
+    ctx.textAlign = 'center';
+    // Show labels at regular intervals to avoid crowding
+    const step = Math.ceil(labels.length / 5); // Show ~5 labels max
+    labels.forEach((label, i) => {
+      if (i % step === 0 || i === labels.length - 1) {
+        ctx.fillText(label, pts[i].x, H - 2);
+      }
+    });
+  }
+}
+
+function renderActivityBreakdown() {
+  // Hide activity breakdown skeleton
+  const actSkel = document.getElementById('activity-breakdown-skeleton');
+  if (actSkel) actSkel.style.display = 'none';
+
+  const container = document.getElementById('activity-breakdown');
+
+  if (!activities || activities.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:24px 0">
+      <div class="icon">📊</div>
+      <p style="font-size:11px">No automated activity submissions yet</p>
+      <p style="font-size:10px;margin-top:8px;color:var(--muted)">
+        Run: <code style="background:var(--surface2);padding:2px 6px;border-radius:3px">daily-metrics opencode submit</code>
+      </p>
+    </div>`;
+    return;
+  }
+
+  // Group by project
+  const byProject = {};
+  activities.forEach(act => {
+    const proj = act.project_name || act.project_path || 'Unknown';
+    if (!byProject[proj]) {
+      byProject[proj] = {
+        project: proj,
+        totalBash: 0,
+        totalReads: 0,
+        totalEdits: 0,
+        totalWrites: 0,
+        totalSearches: 0,
+        totalTimeSaved: 0,
+        days: []
+      };
+    }
+    byProject[proj].totalBash += act.bash_commands || 0;
+    byProject[proj].totalReads += act.file_reads || 0;
+    byProject[proj].totalEdits += act.file_edits || 0;
+    byProject[proj].totalWrites += act.file_writes || 0;
+    byProject[proj].totalSearches += act.searches || 0;
+    byProject[proj].totalTimeSaved += act.time_saved_total || 0;
+    byProject[proj].days.push({
+      date: act.date,
+      bash: act.bash_commands,
+      time: act.time_saved_total
+    });
+  });
+
+  // Sort by total time saved
+  const projects = Object.values(byProject).sort((a, b) => b.totalTimeSaved - a.totalTimeSaved);
+
+  // Render table
+  let html = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Days</th>
+            <th>Bash Cmds</th>
+            <th>File Ops</th>
+            <th>Time Saved</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  projects.forEach(proj => {
+    const fileOps = proj.totalReads + proj.totalEdits + proj.totalWrites + proj.totalSearches;
+    html += `
+      <tr style="cursor:pointer" onclick="expandActivityProject('${proj.project}')">
+        <td><strong>${proj.project}</strong></td>
+        <td>${proj.days.length}</td>
+        <td>${proj.totalBash.toLocaleString()}</td>
+        <td>${fileOps.toLocaleString()}</td>
+        <td><span class="savings-pill">${proj.totalTimeSaved.toFixed(1)}h</span></td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function expandActivityProject(projectName) {
+  // TODO: Show daily breakdown in a modal or expanded view
+  const projectActivities = activities.filter(a =>
+    (a.project_name || a.project_path) === projectName
+  ).sort((a, b) => b.date.localeCompare(a.date));
+
+  console.log('Project activities:', projectName, projectActivities);
+  showToast(`Showing ${projectActivities.length} days for ${projectName}`);
+}
+
+// ==================== SETTINGS ====================
+function saveSettings() {
+  const s = {
+    wpm: +document.getElementById('s-wpm').value,
+    bashChars: +document.getElementById('s-bash-chars').value,
+    bashExec: +document.getElementById('s-bash-exec').value,
+    readTime: +document.getElementById('s-read-time').value,
+    editTime: +document.getElementById('s-edit-time').value,
+    searchTime: +document.getElementById('s-search-time').value,
+  };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  showToast('Settings saved');
+}
+
+function loadSettingsUI() {
+  const s = getSettings();
+  document.getElementById('s-wpm').value = s.wpm;
+  document.getElementById('s-bash-chars').value = s.bashChars;
+  document.getElementById('s-bash-exec').value = s.bashExec;
+  document.getElementById('s-read-time').value = s.readTime;
+  document.getElementById('s-edit-time').value = s.editTime;
+  document.getElementById('s-search-time').value = s.searchTime;
+}
+
+// ==================== EXPORT ====================
+function exportSessions() {
+  const blob = new Blob([JSON.stringify(sessions,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='opencode-sessions.json'; a.click();
+}
+
+function clearSessions() {
+  if (!confirm(`Delete all ${sessions.length} sessions?`)) return;
+  sessions = []; saveSessions(); renderAll();
+}
+
+// ==================== UI ====================
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if (id==='dashboard') setTimeout(()=>{ renderDashboard(); }, 50);
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type==='error' ? 'var(--accent3)' : 'var(--accent)';
+  t.style.color = type==='error' ? '#fff' : '#000';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// Expose reload function for global demo toggle
+window.reloadPageData = loadSessions;
+
+loadSessions();
+loadSettingsUI();
+</script>
+{% endblock %}

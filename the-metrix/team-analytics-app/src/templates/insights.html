@@ -1,0 +1,445 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Insights · THE METRIX{% endblock %}
+{% block nav_insights %}active{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block extra_style %}
+header { padding: 28px 0 0; margin-bottom: 32px; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+.header-actions { display: flex; gap: 10px; }
+
+.health-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; margin-bottom: 24px; position: relative; overflow: hidden; }
+.health-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2), transparent); }
+.health-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.health-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; transition: transform 0.2s; }
+.metric-card:hover { transform: translateY(-2px); }
+.metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.metric-card.sprint::before { background: var(--accent); }
+.metric-card.dora::before { background: var(--accent2); }
+.metric-card.ai::before { background: var(--accent4); }
+.metric-card.survey::before { background: #ff9f43; }
+
+.metric-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.metric-value { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; font-feature-settings: 'tnum' 1; }
+.metric-unit { font-size: 12px; font-weight: 400; opacity: 0.5; margin-left: 3px; }
+.metric-sub { font-size: 10px; color: var(--muted); }
+
+.section-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; color: var(--accent); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+.insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.insight-card h3 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.insight-desc { font-size: 11px; color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+
+.stat-list { list-style: none; }
+.stat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 12px; }
+.stat-item:last-child { border-bottom: none; }
+.stat-item-label { color: var(--muted); }
+.stat-item-value { font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--accent); font-feature-settings: 'tnum' 1; }
+
+.loading-state { padding: 40px; text-align: center; color: var(--muted); }
+.loading-state .icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; animation: pulse 2s infinite; }
+
+/* Inline demo badges for metric cards */
+.stat-item .demo-badge, .metric-card .demo-badge { display: inline-block; background: rgba(255,217,61,0.15); color: var(--accent4); border: 1px solid rgba(255,217,61,0.3); padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; letter-spacing: 0.05em; margin-left: 8px; }
+body.demo-mode .health-banner::before { background: linear-gradient(90deg, var(--accent4), var(--accent3), transparent); }
+
+/* Skeleton loading animation */
+.skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-metric { height: 60px; margin-bottom: 8px; }
+.skeleton-text { height: 16px; margin-bottom: 8px; }
+.skeleton-stat-item { height: 40px; margin-bottom: 8px; }
+
+/* Metric card skeleton overlay */
+.metric-grid > div { position: relative; }
+.metric-grid > div > .metric-card[id^="skeleton-"] { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; }
+
+/* Health banner loading animation */
+.health-loading { display: inline-flex; gap: 6px; align-items: center; height: 20px; margin-left: 12px; vertical-align: middle; }
+.health-loading span { width: 4px; background: var(--accent); animation: wave 1.2s ease-in-out infinite; }
+.health-loading span:nth-child(1) { animation-delay: 0s; height: 10px; }
+.health-loading span:nth-child(2) { animation-delay: 0.1s; height: 16px; }
+.health-loading span:nth-child(3) { animation-delay: 0.2s; height: 20px; }
+.health-loading span:nth-child(4) { animation-delay: 0.3s; height: 16px; }
+.health-loading span:nth-child(5) { animation-delay: 0.4s; height: 10px; }
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+{% endblock %}
+
+{% block content %}
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">INSIGHTS</div>
+      <div class="demo-badge">DEMO MODE</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="health-banner">
+    <div class="health-title">
+      🎯 System Health
+      <div class="health-loading" id="health-loading">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="health-desc" id="health-desc">All metrics loading...</div>
+  </div>
+
+  <div class="section-title">📊 Key Metrics at a Glance</div>
+
+  <div class="metric-grid" id="metric-grid">
+    <!-- Sprint Velocity -->
+    <div style="position:relative">
+      <div class="metric-card sprint" id="skeleton-sprint" style="display:none">
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="metric-card sprint" id="metric-sprint">
+        <div class="metric-label">Sprint Velocity</div>
+        <div class="metric-value">—<span class="metric-unit">pts</span></div>
+        <div class="metric-sub">Average completed per sprint</div>
+      </div>
+    </div>
+
+    <!-- Deployment Frequency -->
+    <div style="position:relative">
+      <div class="metric-card dora" id="skeleton-dora" style="display:none">
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="metric-card dora" id="metric-dora">
+        <div class="metric-label">Deployment Frequency</div>
+        <div class="metric-value">—<span class="metric-unit">/wk</span></div>
+        <div class="metric-sub">PRs merged per week</div>
+      </div>
+    </div>
+
+    <!-- Team DevEx Score -->
+    <div style="position:relative">
+      <div class="metric-card survey" id="skeleton-survey" style="display:none">
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="metric-card survey" id="metric-survey">
+        <div class="metric-label">Team DevEx Score</div>
+        <div class="metric-value">—<span class="metric-unit">/5</span></div>
+        <div class="metric-sub">Developer experience rating</div>
+      </div>
+    </div>
+
+    <!-- AI Hours Saved -->
+    <div style="position:relative">
+      <div class="metric-card ai" id="skeleton-ai" style="display:none">
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="metric-card ai" id="metric-ai">
+        <div class="metric-label">AI Hours Saved</div>
+        <div class="metric-value">—<span class="metric-unit">hrs</span></div>
+        <div class="metric-sub">Total time saved with AI</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="insight-card">
+      <h3>📈 Sprint Health</h3>
+      <p class="insight-desc">Recent sprint performance and trends</p>
+      <ul class="stat-list" id="sprint-stats">
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+      </ul>
+    </div>
+
+    <div class="insight-card">
+      <h3>🚀 DORA Metrics</h3>
+      <p class="insight-desc">Deployment and delivery performance</p>
+      <ul class="stat-list" id="dora-stats">
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="insight-card">
+      <h3>📋 Team Pulse</h3>
+      <p class="insight-desc">Latest survey responses and sentiment</p>
+      <ul class="stat-list" id="survey-stats">
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+      </ul>
+    </div>
+
+    <div class="insight-card">
+      <h3>⚡ AI Leverage</h3>
+      <p class="insight-desc">OpenCode sessions and productivity gains</p>
+      <ul class="stat-list" id="ai-stats">
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+        <li><div class="skeleton skeleton-stat-item"></div></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+const API_BASE = '/api';
+
+// Expose reload function for global demo toggle
+window.reloadPageData = loadAllData;
+
+async function loadAllData() {
+  await Promise.all([
+    loadSprintData(),
+    loadDORAData(),
+    loadSurveyData(),
+    loadAIData()
+  ]);
+
+  // Update system health summary
+  updateHealthBanner();
+}
+
+function updateHealthBanner() {
+  const healthDesc = document.getElementById('health-desc');
+  const healthLoading = document.getElementById('health-loading');
+
+  if (window.DEMO_MODE) {
+    healthDesc.innerHTML = '✅ All systems operational • Tracking 4 metrics across sprint, DORA, survey, and AI data sources';
+    if (healthLoading) healthLoading.style.display = 'none';
+    return;
+  }
+
+  // Count which metrics have data
+  const sprintValue = document.querySelector('#metric-sprint .metric-value').textContent;
+  const doraValue = document.querySelector('#metric-dora .metric-value').textContent;
+  const surveyValue = document.querySelector('#metric-survey .metric-value').textContent;
+  const aiValue = document.querySelector('#metric-ai .metric-value').textContent;
+
+  const hasData = [sprintValue, doraValue, surveyValue, aiValue].filter(v => !v.startsWith('—')).length;
+  const total = 4;
+
+  // Hide loading animation
+  if (healthLoading) healthLoading.style.display = 'none';
+
+  if (hasData === 0) {
+    healthDesc.innerHTML = '⚠️ No data available • Start by submitting sprint data, OpenCode sessions, or survey responses';
+  } else if (hasData === total) {
+    healthDesc.innerHTML = `✅ All systems operational • Tracking ${total} metrics across sprint, DORA, survey, and AI data sources`;
+  } else {
+    healthDesc.innerHTML = `⚡ Partial data available • ${hasData} of ${total} metrics populated • Add more data for complete insights`;
+  }
+}
+
+async function loadSprintData() {
+  // Show skeleton (will overlay actual card)
+  const skeletonSprint = document.getElementById('skeleton-sprint');
+  if (skeletonSprint) skeletonSprint.style.display = 'block';
+
+  const el = document.getElementById('sprint-stats');
+
+  if (window.DEMO_MODE) {
+    el.innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Avg Velocity</span><span class="stat-item-value">38.2</span></li>
+      <li class="stat-item"><span class="stat-item-label">Reliability</span><span class="stat-item-value">82.0%</span></li>
+      <li class="stat-item"><span class="stat-item-label">Focus Factor</span><span class="stat-item-value">0.71</span></li>
+      <li class="stat-item"><span class="stat-item-label">Sprints Tracked</span><span class="stat-item-value">12</span></li>
+    `;
+    document.querySelector('#metric-sprint .metric-value').innerHTML = `38.2<span class="metric-unit">pts</span>`;
+  } else {
+    const velocity = '{{ team_metrics.avg_velocity if team_metrics else "" }}';
+    if (velocity) {
+      document.querySelector('#metric-sprint .metric-value').innerHTML = `${velocity}<span class="metric-unit">pts</span>`;
+    } else {
+      // Reset metric card when no data
+      document.querySelector('#metric-sprint .metric-value').innerHTML = `—<span class="metric-unit">pts</span>`;
+    }
+    el.innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Avg Velocity</span><span class="stat-item-value">{{ team_metrics.avg_velocity if team_metrics else '—' }}</span></li>
+      <li class="stat-item"><span class="stat-item-label">Reliability</span><span class="stat-item-value">{{ team_metrics.avg_reliability if team_metrics else '—' }}%</span></li>
+      <li class="stat-item"><span class="stat-item-label">Focus Factor</span><span class="stat-item-value">{{ focus_factor if focus_factor else '—' }}</span></li>
+    `;
+  }
+
+  // Hide skeleton (actual card was always visible underneath)
+  if (skeletonSprint) skeletonSprint.style.display = 'none';
+}
+
+async function loadDORAData() {
+  // Show skeleton (will overlay actual card)
+  const skeletonDora = document.getElementById('skeleton-dora');
+  if (skeletonDora) skeletonDora.style.display = 'block';
+
+  if (window.DEMO_MODE) {
+    document.getElementById('dora-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Deploy Frequency</span><span class="stat-item-value">2.8/wk</span></li>
+      <li class="stat-item"><span class="stat-item-label">Lead Time</span><span class="stat-item-value">18.2 hrs</span></li>
+      <li class="stat-item"><span class="stat-item-label">PRs Merged (30d)</span><span class="stat-item-value">17</span></li>
+      <li class="stat-item"><span class="stat-item-label">Open PRs</span><span class="stat-item-value">5</span></li>
+    `;
+    document.querySelector('#metric-dora .metric-value').innerHTML = `2.8<span class="metric-unit">/wk</span>`;
+    if (skeletonDora) skeletonDora.style.display = 'none';
+    return;
+  }
+
+  try {
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+
+    const response = await fetch(`${API_BASE}/metrics/github?start_date=${startDate}&end_date=${endDate}`);
+    const data = await response.json();
+
+    const mergedPRs = data.merged_prs || 0;
+    const weeks = 4.3; // ~30 days
+    const deploysPerWeek = (mergedPRs / weeks).toFixed(1);
+
+    document.getElementById('dora-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Deploy Frequency</span><span class="stat-item-value">${deploysPerWeek}/wk</span></li>
+      <li class="stat-item"><span class="stat-item-label">PRs Merged (30d)</span><span class="stat-item-value">${mergedPRs}</span></li>
+      <li class="stat-item"><span class="stat-item-label">Open PRs</span><span class="stat-item-value">${data.open_prs || 0}</span></li>
+    `;
+
+    // Update metric card
+    document.querySelector('#metric-dora .metric-value').innerHTML = `${deploysPerWeek}<span class="metric-unit">/wk</span>`;
+  } catch (err) {
+    document.getElementById('dora-stats').innerHTML = '<li class="stat-item"><span class="stat-item-label">Error loading data</span><span class="stat-item-value">—</span></li>';
+    // Reset metric card on error
+    document.querySelector('#metric-dora .metric-value').innerHTML = `—<span class="metric-unit">/wk</span>`;
+  }
+
+  // Hide skeleton (actual card was always visible underneath)
+  if (skeletonDora) skeletonDora.style.display = 'none';
+}
+
+async function loadSurveyData() {
+  // Show skeleton (will overlay actual card)
+  const skeletonSurvey = document.getElementById('skeleton-survey');
+  if (skeletonSurvey) skeletonSurvey.style.display = 'block';
+
+  if (window.DEMO_MODE) {
+    document.getElementById('survey-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Responses</span><span class="stat-item-value">23</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg DevEx Score</span><span class="stat-item-value">3.8/5</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg Flow Score</span><span class="stat-item-value">3.5/5</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg AI Code %</span><span class="stat-item-value">38%</span></li>
+    `;
+    document.querySelector('#metric-survey .metric-value').innerHTML = `3.8<span class="metric-unit">/5</span>`;
+    if (skeletonSurvey) skeletonSurvey.style.display = 'none';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/survey/responses?limit=100`);
+    const data = await response.json();
+
+    if (data.count === 0) {
+      document.getElementById('survey-stats').innerHTML = '<li class="stat-item"><span class="stat-item-label">No responses yet</span><span class="stat-item-value">—</span></li>';
+      // Reset metric card when no data
+      document.querySelector('#metric-survey .metric-value').innerHTML = `—<span class="metric-unit">/5</span>`;
+      if (skeletonSurvey) skeletonSurvey.style.display = 'none';
+      return;
+    }
+
+    const responses = data.responses;
+    const avgFlow = responses.reduce((sum, r) => sum + (r.flow || 0), 0) / responses.length;
+    const avgDevEx = responses.reduce((sum, r) => sum + (r.devex || 0), 0) / responses.length;
+    const avgAICodePct = responses.reduce((sum, r) => sum + (r.ai_code_pct || 0), 0) / responses.length;
+
+    document.getElementById('survey-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Responses</span><span class="stat-item-value">${data.count}</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg DevEx Score</span><span class="stat-item-value">${avgDevEx.toFixed(1)}/5</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg Flow Score</span><span class="stat-item-value">${avgFlow.toFixed(1)}/5</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg AI Code %</span><span class="stat-item-value">${Math.round(avgAICodePct)}%</span></li>
+    `;
+
+    // Update metric card
+    document.querySelector('#metric-survey .metric-value').innerHTML = `${avgDevEx.toFixed(1)}<span class="metric-unit">/5</span>`;
+  } catch (err) {
+    document.getElementById('survey-stats').innerHTML = '<li class="stat-item"><span class="stat-item-label">Error loading data</span><span class="stat-item-value">—</span></li>';
+    // Reset metric card on error
+    document.querySelector('#metric-survey .metric-value').innerHTML = `—<span class="metric-unit">/5</span>`;
+  }
+
+  // Hide skeleton (actual card was always visible underneath)
+  if (skeletonSurvey) skeletonSurvey.style.display = 'none';
+}
+
+async function loadAIData() {
+  // Show skeleton (will overlay actual card)
+  const skeletonAI = document.getElementById('skeleton-ai');
+  if (skeletonAI) skeletonAI.style.display = 'block';
+
+  if (window.DEMO_MODE) {
+    document.getElementById('ai-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Sessions</span><span class="stat-item-value">62</span></li>
+      <li class="stat-item"><span class="stat-item-label">Total Hours Saved</span><span class="stat-item-value">187.4h</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg Saved/Session</span><span class="stat-item-value">3.0h</span></li>
+      <li class="stat-item"><span class="stat-item-label">Total Actions</span><span class="stat-item-value">12,458</span></li>
+    `;
+    document.querySelector('#metric-ai .metric-value').innerHTML = `187.4<span class="metric-unit">hrs</span>`;
+    if (skeletonAI) skeletonAI.style.display = 'none';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/opencode/activity?limit=1000`);
+    const data = await response.json();
+
+    if (!data.activities || data.activities.length === 0) {
+      document.getElementById('ai-stats').innerHTML = '<li class="stat-item"><span class="stat-item-label">No activity yet</span><span class="stat-item-value">—</span></li>';
+      // Reset metric card when no data
+      document.querySelector('#metric-ai .metric-value').innerHTML = `—<span class="metric-unit">hrs</span>`;
+      if (skeletonAI) skeletonAI.style.display = 'none';
+      return;
+    }
+
+    const activities = data.activities;
+    const totalSaved = activities.reduce((sum, a) => sum + (a.time_saved_total || 0), 0);
+    const totalSessionCount = activities.reduce((sum, a) => sum + (a.session_count || 0), 0);
+    const activeDays = activities.length;
+    const avgSaved = totalSaved / activeDays;
+    const totalActions = activities.reduce((sum, a) => sum + ((a.bash_commands || 0) + (a.file_edits || 0) + (a.file_reads || 0) + (a.file_writes || 0) + (a.searches || 0)), 0);
+
+    document.getElementById('ai-stats').innerHTML = `
+      <li class="stat-item"><span class="stat-item-label">Active Days</span><span class="stat-item-value">${activeDays}</span></li>
+      <li class="stat-item"><span class="stat-item-label">Total Sessions</span><span class="stat-item-value">${totalSessionCount}</span></li>
+      <li class="stat-item"><span class="stat-item-label">Total Hours Saved</span><span class="stat-item-value">${totalSaved.toFixed(1)}h</span></li>
+      <li class="stat-item"><span class="stat-item-label">Avg Saved/Day</span><span class="stat-item-value">${avgSaved.toFixed(1)}h</span></li>
+    `;
+
+    // Update metric card
+    document.querySelector('#metric-ai .metric-value').innerHTML = `${totalSaved.toFixed(1)}<span class="metric-unit">hrs</span>`;
+  } catch (err) {
+    document.getElementById('ai-stats').innerHTML = '<li class="stat-item"><span class="stat-item-label">Error loading data</span><span class="stat-item-value">—</span></li>';
+    // Reset metric card on error
+    document.querySelector('#metric-ai .metric-value').innerHTML = `—<span class="metric-unit">hrs</span>`;
+  }
+
+  // Hide skeleton (actual card was always visible underneath)
+  if (skeletonAI) skeletonAI.style.display = 'none';
+}
+
+// Load on page load
+window.addEventListener('DOMContentLoaded', loadAllData);
+</script>
+{% endblock %}
